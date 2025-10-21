@@ -8,12 +8,7 @@ const app = express();
 
 // CORS configuration for frontend integration
 const allowedOrigins = [
-  ...config.CORS_ORIGINS,
-  config.FRONTEND_URL || 'http://localhost:3001',
-  // Add production URLs here
-  'https://yourdomain.com',
-  'https://www.yourdomain.com',
-  'https://staging.yourdomain.com'
+  ...config.CORS_ORIGINS
 ];
 
 app.use(cors({

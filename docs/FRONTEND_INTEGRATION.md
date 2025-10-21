@@ -88,6 +88,24 @@ http://localhost:3000/api
 }
 ```
 
+### 4. Payment Callback (Internal)
+**GET** `/payments/callback`
+
+**Query Parameters:**
+- `reference` - Transaction reference
+- `trxref` - Alternative reference parameter
+
+**Note:** This endpoint is called by Paystack after payment completion. It handles:
+- Payment verification
+- Order status updates
+- Email notifications
+- Redirects to frontend success/error pages
+
+**Redirects:**
+- **Success**: `{FRONTEND_URL}/payment/success?reference={ref}&order={orderId}`
+- **Failed**: `{FRONTEND_URL}/payment/failed?reference={ref}`
+- **Error**: `{FRONTEND_URL}/payment/error?message={error}`
+
 ## Integration Examples
 
 ### 1. Create Order with Discount
@@ -221,7 +239,13 @@ After payment, users are redirected to:
 - **Failed**: `http://localhost:3001/payment/failed?reference=ORD_123`
 - **Error**: `http://localhost:3001/payment/error?message=error_message`
 
-Handle these in your React router:
+**Important:** The callback route `/api/payments/callback` is handled by your backend API, not your frontend. It:
+1. Verifies the payment with Paystack
+2. Updates the order status in your database
+3. Sends confirmation emails
+4. Redirects the user to your frontend
+
+Handle the redirects in your React router:
 ```javascript
 // In your payment success page
 const PaymentSuccess = () => {
@@ -238,6 +262,36 @@ const PaymentSuccess = () => {
   }, [reference]);
   
   return <div>Payment successful!</div>;
+};
+
+// In your payment failed page
+const PaymentFailed = () => {
+  const { reference } = useParams();
+  
+  return (
+    <div>
+      <h1>Payment Failed</h1>
+      <p>Reference: {reference}</p>
+      <button onClick={() => window.location.href = '/'}>
+        Try Again
+      </button>
+    </div>
+  );
+};
+
+// In your payment error page
+const PaymentError = () => {
+  const { message } = useParams();
+  
+  return (
+    <div>
+      <h1>Payment Error</h1>
+      <p>Error: {message}</p>
+      <button onClick={() => window.location.href = '/'}>
+        Go Home
+      </button>
+    </div>
+  );
 };
 ```
 

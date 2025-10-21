@@ -44,7 +44,7 @@ export const initializeTransaction = async (
       amount: amountinKobo,
       reference: transactionReference,
       channels: ["card"],
-      callback_url: config.CALLBACK_URL
+      // callback_url: config.CALLBACK_URL
     });
     console.log("Transaction Initialized", transaction.data);
 

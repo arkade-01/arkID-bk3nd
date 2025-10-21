@@ -7,12 +7,27 @@ import router from "./routes";
 const app = express();
 
 // CORS configuration for frontend integration
+const allowedOrigins = [
+  ...config.CORS_ORIGINS,
+  config.FRONTEND_URL || 'http://localhost:3001',
+  // Add production URLs here
+  'https://yourdomain.com',
+  'https://www.yourdomain.com',
+  'https://staging.yourdomain.com'
+];
+
 app.use(cors({
-  origin: [
-    'http://localhost:3001', // React dev server
-    'http://localhost:3000', // Alternative React port
-    config.FRONTEND_URL || 'http://localhost:3001'
-  ],
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.log(`CORS blocked origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']

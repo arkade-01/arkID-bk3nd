@@ -15,8 +15,9 @@ export const handlePaymentCallback = async (req: Request, res: Response) => {
             const transactionReference = (reference || trxref) as string;
 
             if (!transactionReference) {
+                  const redirectUrl = config.IS_DEVELOPMENT ? config.FRONTEND_URL_DEV : config.FRONTEND_URL_PROD;
                   return res.redirect(
-                        `${config.FRONTEND_URL}/payment/error?message=No reference provided`
+                        `${redirectUrl}/payment/error?message=No reference provided`
                   );
             }
 
@@ -35,8 +36,9 @@ export const handlePaymentCallback = async (req: Request, res: Response) => {
                   );
 
                   if (!order) {
+                        const redirectUrl = config.IS_DEVELOPMENT ? config.FRONTEND_URL_DEV : config.FRONTEND_URL_PROD;
                         return res.redirect(
-                              `${config.FRONTEND_URL}/payment/error?message=Order not found`
+                              `${redirectUrl}/payment/error?message=Order not found`
                         );
                   }
 
@@ -71,8 +73,9 @@ export const handlePaymentCallback = async (req: Request, res: Response) => {
                   }
 
                   // Redirect to success page
+                  const redirectUrl = config.IS_DEVELOPMENT ? config.FRONTEND_URL_DEV : config.FRONTEND_URL_PROD;
                   return res.redirect(
-                        `${config.FRONTEND_URL}/payment/success?reference=${transactionReference}&order=${order._id}`
+                        `${redirectUrl}/payment/success?reference=${transactionReference}&order=${order._id}`
                   );
             } else {
                   // Payment failed or was cancelled
@@ -81,14 +84,16 @@ export const handlePaymentCallback = async (req: Request, res: Response) => {
                         { status: "failed" }
                   );
 
+                  const redirectUrl = config.IS_DEVELOPMENT ? config.FRONTEND_URL_DEV : config.FRONTEND_URL_PROD;
                   return res.redirect(
-                        `${config.FRONTEND_URL}/payment/failed?reference=${transactionReference}`
+                        `${redirectUrl}/payment/failed?reference=${transactionReference}`
                   );
             }
       } catch (error) {
             console.error("Error handling payment callback:", error);
+            const redirectUrl = config.IS_DEVELOPMENT ? config.FRONTEND_URL_DEV : config.FRONTEND_URL_PROD;
             return res.redirect(
-                  `${config.FRONTEND_URL}/payment/error?message=${error instanceof Error ? error.message : 'Unknown error'}`
+                  `${redirectUrl}/payment/error?message=${error instanceof Error ? error.message : 'Unknown error'}`
             );
       }
 };

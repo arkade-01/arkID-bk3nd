@@ -148,7 +148,7 @@ export const paymentSuccessfulTemplate = (order: OrderDetails): string => {
                   ` : ''}
                   
                   <div class="amount-highlight">
-                        ${order.amount === 0 ? 'FREE' : `${order.currency} ${(order.amount / 100).toLocaleString()}`}
+                        ${order.amount === 0 ? 'FREE' : `${order.currency} ${order.amount.toLocaleString()}`}
                   </div>
                   
                   <div class="order-details">
@@ -367,7 +367,7 @@ export const orderReceivedTemplate = (order: OrderDetails): string => {
                   <div class="amount-box">
                         <div class="amount-label">Order Value</div>
                         <div class="amount-value">
-                              ${order.amount === 0 ? 'FREE' : `${order.currency} ${(order.amount / 100).toLocaleString()}`}
+                              ${order.amount === 0 ? 'FREE' : `${order.currency} ${order.amount.toLocaleString()}`}
                               <span class="status-badge ${order.amount === 0 ? 'status-free' : 'status-paid'}">
                                     ${order.amount === 0 ? 'DISCOUNT APPLIED' : 'PAID'}
                               </span>

@@ -593,10 +593,30 @@ export const discountAppliedTemplate = (order: OrderDetails): string => {
                   <div class="free-badge">
                         FREE! 🎁
                   </div>
-                  
+
+                  ${order.cardId ? `
+                  <div style="background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px; padding: 20px; margin: 30px 0;">
+                        <h3 style="margin-top: 0; color: #856404;">
+                              🔑 IMPORTANT: Your Card Activation ID
+                        </h3>
+                        <div style="background: white; padding: 15px; border-radius: 5px; text-align: center; margin: 15px 0;">
+                              <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Card ID</div>
+                              <div style="font-size: 24px; font-weight: bold; color: #333; font-family: monospace; letter-spacing: 2px;">
+                                    ${order.cardId}
+                              </div>
+                        </div>
+                        <p style="margin: 15px 0; color: #856404; font-size: 14px;">
+                              <strong>⚠️ PLEASE SAVE THIS EMAIL!</strong><br>
+                              You will need this <strong>Card ID (${order.cardId})</strong> to activate your arkID card when you receive it.
+                              Without this ID, you won't be able to activate your card.
+                        </p>
+                  </div>
+                  ` : ''}
+
                   <div class="order-details">
                         <h3 style="color: #4caf50;">Order Confirmed</h3>
                         <p><strong>Reference:</strong> ${order.reference}</p>
+                        ${order.cardId ? `<p><strong>Card ID:</strong> <span style="font-family: monospace; font-weight: bold;">${order.cardId}</span></p>` : ''}
                         <p><strong>Card Link:</strong> ${order.cardLink}</p>
                         <p><strong>Delivery:</strong> ${order.address}, ${order.city}, ${order.state}</p>
                   </div>

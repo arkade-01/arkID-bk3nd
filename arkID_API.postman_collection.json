@@ -1,0 +1,347 @@
+{
+  "info": {
+    "name": "arkID API",
+    "description": "Complete API collection for arkID NFC Card System",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "arkID"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        },
+        "description": "Check if the API server is running"
+      }
+    },
+    {
+      "name": "Card",
+      "item": [
+        {
+          "name": "Get Card by Username (Public)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/card/:username",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "card", ":username"],
+              "variable": [
+                {
+                  "key": "username",
+                  "value": "john_doe",
+                  "description": "Username to look up"
+                }
+              ]
+            },
+            "description": "Public endpoint to get card info. Increments taps_count automatically."
+          }
+        },
+        {
+          "name": "Activate Card",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"card_id\": \"ark000\",\n  \"redirect_url\": \"https://example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/card/activate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "card", "activate"]
+            },
+            "description": "Activate a card with redirect URL. Requires Privy authentication."
+          }
+        },
+        {
+          "name": "Update Card Redirect URL",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"redirect_url\": \"https://newurl.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/card/update",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "card", "update"]
+            },
+            "description": "Update the redirect URL for an activated card. Requires Privy authentication."
+          }
+        },
+        {
+          "name": "Get User Cards",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/card/user/cards",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "card", "user", "cards"]
+            },
+            "description": "Get all cards for the authenticated user. Requires Privy authentication."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "Create Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"username\": \"john_doe\",\n  \"email\": \"john@example.com\",\n  \"phone\": \"+1234567890\",\n  \"address\": \"123 Main St\",\n  \"city\": \"Lagos\",\n  \"state\": \"Lagos\",\n  \"currency\": \"NGN\",\n  \"amount\": 10000,\n  \"discountCode\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "orders"]
+            },
+            "description": "Create a new order. Username is used to auto-generate card link. If discountCode is valid, order is completed immediately."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payments",
+      "item": [
+        {
+          "name": "Payment Callback",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/payments/callback?reference=ORD_123456789",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "payments", "callback"],
+              "query": [
+                {
+                  "key": "reference",
+                  "value": "ORD_123456789",
+                  "description": "Order reference from Paystack"
+                }
+              ]
+            },
+            "description": "Paystack redirects user here after payment. Creates card and sends emails."
+          }
+        },
+        {
+          "name": "Payment Webhook",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-paystack-signature",
+                "value": "signature_hash",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event\": \"charge.success\",\n  \"data\": {\n    \"reference\": \"ORD_123456789\",\n    \"status\": \"success\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/payments/webhook",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "payments", "webhook"]
+            },
+            "description": "Paystack webhook endpoint. Called by Paystack servers when payment status changes."
+          }
+        },
+        {
+          "name": "Verify Payment",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/payments/verify/:reference",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "payments", "verify", ":reference"],
+              "variable": [
+                {
+                  "key": "reference",
+                  "value": "ORD_123456789",
+                  "description": "Order reference"
+                }
+              ]
+            },
+            "description": "Manually verify a payment status with Paystack"
+          }
+        },
+        {
+          "name": "Get Order Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/payments/status/:reference",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "payments", "status", ":reference"],
+              "variable": [
+                {
+                  "key": "reference",
+                  "value": "ORD_123456789",
+                  "description": "Order reference"
+                }
+              ]
+            },
+            "description": "Get order status by reference. Also checks with Paystack if order is pending."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Discounts",
+      "item": [
+        {
+          "name": "Create Discount Code",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"SUMMER2024\",\n  \"description\": \"Summer promotion\",\n  \"maxUsage\": 100\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/discounts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "discounts"]
+            },
+            "description": "Create a new discount code"
+          }
+        },
+        {
+          "name": "Get All Discount Codes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/discounts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "discounts"]
+            },
+            "description": "Get all discount codes"
+          }
+        },
+        {
+          "name": "Validate Discount Code",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/discounts/validate/:code",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "discounts", "validate", ":code"],
+              "variable": [
+                {
+                  "key": "code",
+                  "value": "SUMMER2024",
+                  "description": "Discount code to validate"
+                }
+              ]
+            },
+            "description": "Validate if a discount code is valid and available"
+          }
+        },
+        {
+          "name": "Delete Discount Code",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/discounts/:code",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "discounts", ":code"],
+              "variable": [
+                {
+                  "key": "code",
+                  "value": "SUMMER2024",
+                  "description": "Discount code to delete"
+                }
+              ]
+            },
+            "description": "Delete a discount code"
+          }
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{authToken}}",
+        "type": "string"
+      }
+    ]
+  }
+}

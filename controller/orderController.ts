@@ -3,22 +3,34 @@ import { initializeTransaction } from "../services/paystackService";
 import { Sales } from "../models/sales";
 import { validateDiscountCode, incrementDiscountUsage } from "../services/discountService";
 import { sendDiscountAppliedEmail, sendOrderReceivedEmail } from "../services/emailService";
+import { createCardForUser } from "../controllers/cardController";
 import { config } from "../config/config";
 
 export const createOrder = async (req: Request, res: Response) => {
       try {
-            const { 
-                  name, 
-                  cardLink, 
-                  phone, 
-                  address, 
+            const {
+                  name,
+                  username,
+                  phone,
+                  address,
                   amount,
-                  city, 
-                  state, 
-                  currency, 
+                  city,
+                  state,
+                  currency,
                   discountCode,
-                  email 
+                  email
             } = req.body;
+
+            // Validate username
+            if (!username || !username.trim()) {
+                  return res.status(400).json({
+                        success: false,
+                        message: "Username is required"
+                  });
+            }
+
+            // Auto-generate card link from username
+            const cardLink = `${config.FRONTEND_URL}/scan/${username.trim()}`;
 
             // Check if there's a discount code
             if (discountCode && discountCode.trim() !== "") {
@@ -52,7 +64,17 @@ export const createOrder = async (req: Request, res: Response) => {
                   
                   // Increment the usage count of the discount code
                   await incrementDiscountUsage(discountCode);
-                  
+
+                  // Create card for user (discount code = free, so create immediately)
+                  let createdCardId = "";
+                  try {
+                        const newCard = await createCardForUser(username.trim(), email || "");
+                        createdCardId = newCard.card_id;
+                        console.log(`✅ Card created for discount order, username: ${username}, card_id: ${createdCardId}`);
+                  } catch (cardError) {
+                        console.error("⚠️ Card creation failed for discount order:", cardError);
+                  }
+
                   // Send emails to buyer and seller
                   try {
                         const customerEmail = sales.email || "";
@@ -64,6 +86,7 @@ export const createOrder = async (req: Request, res: Response) => {
                               city: sales.city,
                               state: sales.state,
                               cardLink: sales.cardLink,
+                              cardId: createdCardId,
                               reference: sales.reference,
                               amount: sales.amount,
                               currency: sales.currency,

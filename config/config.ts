@@ -35,5 +35,7 @@ export const config = {
             FROM: process.env.EMAIL_FROM || "",
             SUBJECT_PREFIX: process.env.EMAIL_SUBJECT_PREFIX || "[arkID] ",
             SELLER_EMAIL: process.env.SELLER_EMAIL || "admin@arkid.com"
-      }
+      },
+      PRIVY_APP_ID: process.env.PRIVY_APP_ID || "",
+      PRIVY_SECRET: process.env.PRIVY_SECRET || ""
 }

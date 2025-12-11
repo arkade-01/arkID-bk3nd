@@ -3,6 +3,7 @@ import { verifyTransaction } from "../services/paystackService";
 import { Sales } from "../models/sales";
 import { config } from "../config/config";
 import { sendPaymentSuccessEmail, sendOrderReceivedEmail } from "../services/emailService";
+import { createCardForUser } from "../controllers/cardController";
 import crypto from "crypto";
 
 /**
@@ -40,6 +41,19 @@ export const handlePaymentCallback = async (req: Request, res: Response) => {
                         return res.redirect(
                               `${redirectUrl}/payment/error?message=Order not found`
                         );
+                  }
+
+                  // Create card for user after successful payment
+                  try {
+                        // Extract username from cardLink (e.g., "https://ark-id.com/john_doe" -> "john_doe")
+                        const username = order.cardLink.split('/').pop() || `user_${Date.now()}`;
+
+                        await createCardForUser(username, order.email || "");
+                        console.log(`✅ Card created for username: ${username}`);
+                  } catch (cardError) {
+                        console.error("⚠️ Card creation failed:", cardError);
+                        // Don't fail the payment callback if card creation fails
+                        // You might want to handle this separately
                   }
 
                   // Send emails to buyer and seller
@@ -266,14 +280,26 @@ export const getOrderStatus = async (req: Request, res: Response) => {
 async function handleSuccessfulCharge(data: any) {
       try {
             const reference = data.reference;
-            
-            await Sales.findOneAndUpdate(
+
+            const order = await Sales.findOneAndUpdate(
                   { reference },
-                  { 
+                  {
                         status: "completed",
                         transactionId: data.id || reference
-                  }
+                  },
+                  { new: true }
             );
+
+            // Create card for user after successful payment (webhook)
+            if (order) {
+                  try {
+                        const username = order.cardLink.split('/').pop() || `user_${Date.now()}`;
+                        await createCardForUser(username, order.email || "");
+                        console.log(`✅ Card created via webhook for username: ${username}`);
+                  } catch (cardError) {
+                        console.error("⚠️ Card creation failed in webhook:", cardError);
+                  }
+            }
 
             console.log(`Payment successful for reference: ${reference}`);
       } catch (error) {

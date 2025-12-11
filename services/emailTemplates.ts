@@ -6,6 +6,7 @@ interface OrderDetails {
       city: string;
       state: string;
       cardLink: string;
+      cardId?: string;
       reference: string;
       amount: number;
       currency: string;
@@ -151,14 +152,40 @@ export const paymentSuccessfulTemplate = (order: OrderDetails): string => {
                         ${order.amount === 0 ? 'FREE' : `${order.currency} ${order.amount.toLocaleString()}`}
                   </div>
                   
+                  ${order.cardId ? `
+                  <div style="background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px; padding: 20px; margin: 30px 0;">
+                        <h3 style="margin-top: 0; color: #856404;">
+                              🔑 IMPORTANT: Your Card Activation ID
+                        </h3>
+                        <div style="background: white; padding: 15px; border-radius: 5px; text-align: center; margin: 15px 0;">
+                              <div style="font-size: 12px; color: #666; margin-bottom: 5px;">Card ID</div>
+                              <div style="font-size: 24px; font-weight: bold; color: #333; font-family: monospace; letter-spacing: 2px;">
+                                    ${order.cardId}
+                              </div>
+                        </div>
+                        <p style="margin: 15px 0; color: #856404; font-size: 14px;">
+                              <strong>⚠️ PLEASE SAVE THIS EMAIL!</strong><br>
+                              You will need this <strong>Card ID (${order.cardId})</strong> to activate your arkID card when you receive it.
+                              Without this ID, you won't be able to activate your card.
+                        </p>
+                  </div>
+                  ` : ''}
+
                   <div class="order-details">
                         <h3>Order Details</h3>
-                        
+
                         <div class="detail-row">
                               <span class="detail-label">Reference:</span>
                               <span class="detail-value">${order.reference}</span>
                         </div>
-                        
+
+                        ${order.cardId ? `
+                        <div class="detail-row">
+                              <span class="detail-label">Card ID:</span>
+                              <span class="detail-value"><strong>${order.cardId}</strong></span>
+                        </div>
+                        ` : ''}
+
                         <div class="detail-row">
                               <span class="detail-label">Card Link:</span>
                               <span class="detail-value">${order.cardLink}</span>
@@ -182,8 +209,10 @@ export const paymentSuccessfulTemplate = (order: OrderDetails): string => {
                   
                   <div class="message">
                         <strong>What's Next?</strong><br>
-                        Your arkID card will be prepared and shipped to your address within 3-5 business days. 
-                        You'll receive another email with tracking information once your order ships.
+                        1. <strong>Save this email</strong> - You'll need your Card ID to activate your card<br>
+                        2. Your arkID card will be prepared and shipped to your address within 3-5 business days<br>
+                        3. You'll receive tracking information once your order ships<br>
+                        4. When you receive the card, scan it or visit your card link to activate it using your Card ID
                   </div>
                   
                   <center>
@@ -435,7 +464,14 @@ export const orderReceivedTemplate = (order: OrderDetails): string => {
                   
                   <div class="order-summary">
                         <h3>🔗 Card Details</h3>
-                        
+
+                        ${order.cardId ? `
+                        <div class="detail-row">
+                              <span class="detail-label">Card ID:</span>
+                              <span class="detail-value"><strong style="font-family: monospace; font-size: 16px; color: #2196F3;">${order.cardId}</strong></span>
+                        </div>
+                        ` : ''}
+
                         <div class="detail-row">
                               <span class="detail-label">Card Link:</span>
                               <span class="detail-value">${order.cardLink}</span>
@@ -446,6 +482,7 @@ export const orderReceivedTemplate = (order: OrderDetails): string => {
                         <h4>✅ Next Steps:</h4>
                         <ul>
                               <li>Prepare the arkID card with the customer's information</li>
+                              ${order.cardId ? `<li><strong>Print Card ID on card:</strong> ${order.cardId}</li>` : ''}
                               <li>Print the card with the provided link: <strong>${order.cardLink}</strong></li>
                               <li>Package the card securely for shipping</li>
                               <li>Ship to: ${order.address}, ${order.city}, ${order.state}</li>

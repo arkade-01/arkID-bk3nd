@@ -27,28 +27,33 @@ export const paymentSuccessfulTemplate = (order: OrderDetails): string => {
             body {
                   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
                   line-height: 1.6;
-                  color: #333;
+                  color: #000000;
                   margin: 0;
                   padding: 0;
-                  background-color: #f4f4f4;
+                  background-color: #FEF9EC;
             }
             .container {
                   max-width: 600px;
                   margin: 20px auto;
-                  background: #ffffff;
+                  background: #FFFFFF;
                   border-radius: 10px;
                   overflow: hidden;
                   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             }
             .header {
-                  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                  color: white;
+                  background: #FBBC05;
+                  color: #000000;
                   padding: 40px 20px;
                   text-align: center;
             }
             .header h1 {
-                  margin: 0;
+                  margin: 10px 0 0 0;
                   font-size: 28px;
+                  font-weight: bold;
+            }
+            .logo {
+                  max-width: 150px;
+                  margin-bottom: 15px;
             }
             .checkmark {
                   font-size: 60px;
@@ -75,7 +80,7 @@ export const paymentSuccessfulTemplate = (order: OrderDetails): string => {
             }
             .order-details h3 {
                   margin-top: 0;
-                  color: #667eea;
+                  color: #FBBC05;
                   font-size: 18px;
             }
             .detail-row {
@@ -95,8 +100,8 @@ export const paymentSuccessfulTemplate = (order: OrderDetails): string => {
                   color: #333;
             }
             .amount-highlight {
-                  background: #667eea;
-                  color: white;
+                  background: #FBBC05;
+                  color: #000000;
                   padding: 15px;
                   border-radius: 8px;
                   text-align: center;
@@ -106,8 +111,8 @@ export const paymentSuccessfulTemplate = (order: OrderDetails): string => {
             }
             .button {
                   display: inline-block;
-                  background: #667eea;
-                  color: white;
+                  background: #FBBC05;
+                  color: #000000;
                   padding: 12px 30px;
                   text-decoration: none;
                   border-radius: 5px;
@@ -115,10 +120,10 @@ export const paymentSuccessfulTemplate = (order: OrderDetails): string => {
                   font-weight: 600;
             }
             .footer {
-                  background: #f9f9f9;
+                  background: #FEF9EC;
                   padding: 30px;
                   text-align: center;
-                  color: #999;
+                  color: #000000;
                   font-size: 14px;
             }
             .footer p {
@@ -129,7 +134,7 @@ export const paymentSuccessfulTemplate = (order: OrderDetails): string => {
 <body>
       <div class="container">
             <div class="header">
-                  <div class="checkmark">✓</div>
+                  <img src="cid:logo" alt="arkID Logo" class="logo" />
                   <h1>Payment Successful!</h1>
             </div>
             
@@ -210,7 +215,7 @@ export const paymentSuccessfulTemplate = (order: OrderDetails): string => {
                   <div class="message">
                         <strong>What's Next?</strong><br>
                         1. <strong>Save this email</strong> - You'll need your Card ID to activate your card<br>
-                        2. Your arkID card will be prepared and shipped to your address within 3-5 business days<br>
+                        2. Your arkID card will be prepared and shipped to your address within 4-5 business weeks<br>
                         3. You'll receive tracking information once your order ships<br>
                         4. When you receive the card, scan it or visit your card link to activate it using your Card ID
                   </div>
@@ -249,28 +254,33 @@ export const orderReceivedTemplate = (order: OrderDetails): string => {
             body {
                   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
                   line-height: 1.6;
-                  color: #333;
+                  color: #000000;
                   margin: 0;
                   padding: 0;
-                  background-color: #f4f4f4;
+                  background-color: #FEF9EC;
             }
             .container {
                   max-width: 600px;
                   margin: 20px auto;
-                  background: #ffffff;
+                  background: #FFFFFF;
                   border-radius: 10px;
                   overflow: hidden;
                   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             }
             .header {
-                  background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
-                  color: white;
+                  background: #FBBC05;
+                  color: #000000;
                   padding: 40px 20px;
                   text-align: center;
             }
             .header h1 {
-                  margin: 0;
+                  margin: 10px 0 0 0;
                   font-size: 28px;
+                  font-weight: bold;
+            }
+            .logo {
+                  max-width: 150px;
+                  margin-bottom: 15px;
             }
             .bell-icon {
                   font-size: 50px;
@@ -297,9 +307,9 @@ export const orderReceivedTemplate = (order: OrderDetails): string => {
             }
             .order-summary h3 {
                   margin-top: 0;
-                  color: #2196F3;
+                  color: #FBBC05;
                   font-size: 18px;
-                  border-bottom: 2px solid #2196F3;
+                  border-bottom: 2px solid #FBBC05;
                   padding-bottom: 10px;
             }
             .detail-row {
@@ -322,8 +332,8 @@ export const orderReceivedTemplate = (order: OrderDetails): string => {
                   text-align: right;
             }
             .amount-box {
-                  background: #2196F3;
-                  color: white;
+                  background: #FBBC05;
+                  color: #000000;
                   padding: 20px;
                   border-radius: 8px;
                   text-align: center;
@@ -339,15 +349,15 @@ export const orderReceivedTemplate = (order: OrderDetails): string => {
                   font-weight: bold;
             }
             .action-required {
-                  background: #e3f2fd;
-                  border: 2px solid #2196F3;
+                  background: #FEF9EC;
+                  border: 2px solid #FBBC05;
                   border-radius: 8px;
                   padding: 20px;
                   margin: 30px 0;
             }
             .action-required h4 {
                   margin-top: 0;
-                  color: #1976D2;
+                  color: #000000;
             }
             .action-required ul {
                   margin: 10px 0;
@@ -357,10 +367,10 @@ export const orderReceivedTemplate = (order: OrderDetails): string => {
                   margin: 8px 0;
             }
             .footer {
-                  background: #f9f9f9;
+                  background: #FEF9EC;
                   padding: 30px;
                   text-align: center;
-                  color: #999;
+                  color: #000000;
                   font-size: 14px;
             }
             .status-badge {
@@ -384,7 +394,7 @@ export const orderReceivedTemplate = (order: OrderDetails): string => {
 <body>
       <div class="container">
             <div class="header">
-                  <div class="bell-icon">🔔</div>
+                  <img src="cid:logo" alt="arkID Logo" class="logo" />
                   <h1>New Order Received!</h1>
             </div>
             
@@ -520,28 +530,33 @@ export const discountAppliedTemplate = (order: OrderDetails): string => {
             body {
                   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
                   line-height: 1.6;
-                  color: #333;
+                  color: #000000;
                   margin: 0;
                   padding: 0;
-                  background-color: #f4f4f4;
+                  background-color: #FEF9EC;
             }
             .container {
                   max-width: 600px;
                   margin: 20px auto;
-                  background: #ffffff;
+                  background: #FFFFFF;
                   border-radius: 10px;
                   overflow: hidden;
                   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             }
             .header {
-                  background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
-                  color: white;
+                  background: #FBBC05;
+                  color: #000000;
                   padding: 40px 20px;
                   text-align: center;
             }
             .header h1 {
-                  margin: 0;
+                  margin: 10px 0 0 0;
                   font-size: 28px;
+                  font-weight: bold;
+            }
+            .logo {
+                  max-width: 150px;
+                  margin-bottom: 15px;
             }
             .celebration {
                   font-size: 60px;
@@ -551,14 +566,17 @@ export const discountAppliedTemplate = (order: OrderDetails): string => {
                   padding: 40px 30px;
             }
             .order-details {
-                  background: #f9f9f9;
+                  background: #FEF9EC;
                   border-radius: 8px;
                   padding: 20px;
                   margin: 30px 0;
             }
+            .order-details h3 {
+                  color: #FBBC05;
+            }
             .free-badge {
-                  background: #4caf50;
-                  color: white;
+                  background: #FBBC05;
+                  color: #000000;
                   padding: 20px;
                   border-radius: 8px;
                   text-align: center;
@@ -567,10 +585,10 @@ export const discountAppliedTemplate = (order: OrderDetails): string => {
                   margin: 20px 0;
             }
             .footer {
-                  background: #f9f9f9;
+                  background: #FEF9EC;
                   padding: 30px;
                   text-align: center;
-                  color: #999;
+                  color: #000000;
                   font-size: 14px;
             }
       </style>
@@ -578,12 +596,12 @@ export const discountAppliedTemplate = (order: OrderDetails): string => {
 <body>
       <div class="container">
             <div class="header">
-                  <div class="celebration">🎉</div>
+                  <img src="cid:logo" alt="arkID Logo" class="logo" />
                   <h1>Congratulations!</h1>
             </div>
-            
+
             <div class="content">
-                  <p style="font-size: 18px; color: #333;">Hi ${order.name},</p>
+                  <p style="font-size: 18px; color: #000000;">Hi ${order.name},</p>
                   
                   <p style="font-size: 16px; color: #666;">
                         Great news! Your discount code <strong>${order.discount}</strong> has been successfully applied, 
@@ -622,7 +640,7 @@ export const discountAppliedTemplate = (order: OrderDetails): string => {
                   </div>
                   
                   <p style="font-size: 16px; color: #666;">
-                        Your card will be prepared and shipped within 3-5 business days. No payment required!
+                        Your card will be prepared and shipped within 2-3 business weeks. No payment required!
                   </p>
             </div>
             

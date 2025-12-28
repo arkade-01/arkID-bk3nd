@@ -1,5 +1,6 @@
 import { transporter, mailConfig, getEmailSubject } from '../config/nodemailerConfig';
 import { paymentSuccessfulTemplate, orderReceivedTemplate, discountAppliedTemplate } from './emailTemplates';
+import path from 'path';
 
 interface OrderDetails {
       name: string;
@@ -23,13 +24,20 @@ export const sendPaymentSuccessEmail = async (
       orderDetails: OrderDetails
 ): Promise<void> => {
       try {
+            const logoPath = path.join(__dirname, '..', 'Logo (2).png');
+
             await transporter.sendMail({
                   from: mailConfig.from,
                   to: customerEmail,
                   subject: getEmailSubject('Payment Successful'),
-                  html: paymentSuccessfulTemplate(orderDetails)
+                  html: paymentSuccessfulTemplate(orderDetails),
+                  attachments: [{
+                        filename: 'logo.png',
+                        path: logoPath,
+                        cid: 'logo' // same cid as in the html img src
+                  }]
             });
-            
+
             console.log(`✅ Payment success email sent to ${customerEmail}`);
       } catch (error) {
             console.error('❌ Error sending payment success email:', error);
@@ -45,13 +53,20 @@ export const sendOrderReceivedEmail = async (
       orderDetails: OrderDetails
 ): Promise<void> => {
       try {
+            const logoPath = path.join(__dirname, '..', 'Logo (2).png');
+
             await transporter.sendMail({
                   from: mailConfig.from,
                   to: sellerEmail,
                   subject: getEmailSubject('Order Received'),
-                  html: orderReceivedTemplate(orderDetails)
+                  html: orderReceivedTemplate(orderDetails),
+                  attachments: [{
+                        filename: 'logo.png',
+                        path: logoPath,
+                        cid: 'logo'
+                  }]
             });
-            
+
             console.log(`✅ Order notification sent to seller ${sellerEmail}`);
       } catch (error) {
             console.error('❌ Error sending order notification:', error);
@@ -67,13 +82,20 @@ export const sendDiscountAppliedEmail = async (
       orderDetails: OrderDetails
 ): Promise<void> => {
       try {
+            const logoPath = path.join(__dirname, '..', 'Logo (2).png');
+
             await transporter.sendMail({
                   from: mailConfig.from,
                   to: customerEmail,
                   subject: getEmailSubject('Discount Code Applied'),
-                  html: discountAppliedTemplate(orderDetails)
+                  html: discountAppliedTemplate(orderDetails),
+                  attachments: [{
+                        filename: 'logo.png',
+                        path: logoPath,
+                        cid: 'logo'
+                  }]
             });
-            
+
             console.log(`✅ Discount applied email sent to ${customerEmail}`);
       } catch (error) {
             console.error('❌ Error sending discount email:', error);

@@ -44,12 +44,14 @@ export const handlePaymentCallback = async (req: Request, res: Response) => {
                   }
 
                   // Create card for user after successful payment
+                  let createdCardId = "";
                   try {
                         // Extract username from cardLink (e.g., "https://ark-id.com/john_doe" -> "john_doe")
                         const username = order.cardLink.split('/').pop() || `user_${Date.now()}`;
 
-                        await createCardForUser(username, order.email || "");
-                        console.log(`✅ Card created for username: ${username}`);
+                        const newCard = await createCardForUser(username, order.email || "");
+                        createdCardId = newCard.card_id;
+                        console.log(`✅ Card created for username: ${username}, card_id: ${createdCardId}`);
                   } catch (cardError) {
                         console.error("⚠️ Card creation failed:", cardError);
                         // Don't fail the payment callback if card creation fails
@@ -66,6 +68,7 @@ export const handlePaymentCallback = async (req: Request, res: Response) => {
                               city: order.city,
                               state: order.state,
                               cardLink: order.cardLink,
+                              cardId: createdCardId,
                               reference: order.reference,
                               amount: order.amount,
                               currency: order.currency,

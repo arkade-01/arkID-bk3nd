@@ -24,7 +24,8 @@ export const sendPaymentSuccessEmail = async (
       orderDetails: OrderDetails
 ): Promise<void> => {
       try {
-            const logoPath = path.join(__dirname, '..', 'Logo (2).png');
+            // Handle both dev (ts-node) and production (compiled js) paths
+            const logoPath = path.join(process.cwd(), 'Logo (2).png');
 
             await transporter.sendMail({
                   from: mailConfig.from,
@@ -53,7 +54,8 @@ export const sendOrderReceivedEmail = async (
       orderDetails: OrderDetails
 ): Promise<void> => {
       try {
-            const logoPath = path.join(__dirname, '..', 'Logo (2).png');
+            // Handle both dev (ts-node) and production (compiled js) paths
+            const logoPath = path.join(process.cwd(), 'Logo (2).png');
 
             await transporter.sendMail({
                   from: mailConfig.from,
@@ -82,7 +84,8 @@ export const sendDiscountAppliedEmail = async (
       orderDetails: OrderDetails
 ): Promise<void> => {
       try {
-            const logoPath = path.join(__dirname, '..', 'Logo (2).png');
+            // Handle both dev (ts-node) and production (compiled js) paths
+            const logoPath = path.join(process.cwd(), 'Logo (2).png');
 
             await transporter.sendMail({
                   from: mailConfig.from,

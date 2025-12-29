@@ -11,7 +11,8 @@ const cardSchema = new Schema({
   // User data
   user_id: {
     type: String,
-    unique: true  // Your custom generated base64 ID
+    unique: true,
+    sparse: true  // Allows multiple null values, set on activation
   },
   privy_id: {
     type: String,

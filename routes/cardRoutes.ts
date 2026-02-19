@@ -9,12 +9,12 @@ import {
 
 const router = Router();
 
-// Public routes
-router.get("/:username", getCardByUsername);
-
-// Protected routes
+// Protected routes (must be before /:username to avoid wildcard conflict)
 router.post("/activate", authMiddleware, activateCard);
 router.patch("/update", authMiddleware, updateCard);
 router.get("/user/cards", authMiddleware, getUserCards);
+
+// Public routes
+router.get("/:username", getCardByUsername);
 
 export default router;

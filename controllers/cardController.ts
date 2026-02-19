@@ -53,7 +53,7 @@ export const createCardForUser = async (
     email: email || undefined,
     isActivated: false,
     taps_count: 0,
-    valid_redirects_count: 0
+    profile_views: 0
   });
 
   await newCard.save();
@@ -74,12 +74,10 @@ export const getCardByUsername = async (req: Request, res: Response): Promise<vo
       return;
     }
 
-    // Increment taps_count
+    // Increment taps_count and profile_views
     card.taps_count += 1;
-
-    // If card is activated and has redirect_url, increment valid_redirects_count
-    if (card.isActivated && card.redirect_url) {
-      card.valid_redirects_count += 1;
+    if (card.isActivated) {
+      card.profile_views += 1;
     }
 
     await card.save();
@@ -89,7 +87,12 @@ export const getCardByUsername = async (req: Request, res: Response): Promise<vo
       data: {
         username: card.username,
         isActivated: card.isActivated,
-        redirect_url: card.isActivated ? card.redirect_url : null,
+        display_name: card.display_name || null,
+        bio: card.bio || null,
+        profile_photo: card.profile_photo || null,
+        social_links: card.isActivated
+          ? card.social_links.filter((link: any) => link.visible).sort((a: any, b: any) => a.order - b.order)
+          : [],
         taps_count: card.taps_count
       }
     });
@@ -104,24 +107,13 @@ export const getCardByUsername = async (req: Request, res: Response): Promise<vo
 
 export const activateCard = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { card_id, redirect_url } = req.body;
+    const { card_id } = req.body;
     const privyId = req.user?.userId; // Privy DID from auth
 
-    if (!card_id || !redirect_url) {
+    if (!card_id) {
       res.status(400).json({
         success: false,
-        message: "card_id and redirect_url are required"
-      });
-      return;
-    }
-
-    // Validate URL format
-    try {
-      new URL(redirect_url);
-    } catch {
-      res.status(400).json({
-        success: false,
-        message: "Invalid URL format"
+        message: "card_id is required"
       });
       return;
     }
@@ -148,7 +140,6 @@ export const activateCard = async (req: Request, res: Response): Promise<void> =
     // Activate the card and set privy_id
     card.isActivated = true;
     card.privy_id = privyId;
-    card.redirect_url = redirect_url;
     await card.save(); // Pre-save hook will generate user_id
 
     res.json({
@@ -158,7 +149,6 @@ export const activateCard = async (req: Request, res: Response): Promise<void> =
         card_id: card.card_id,
         user_id: card.user_id,
         username: card.username,
-        redirect_url: card.redirect_url,
         isActivated: card.isActivated
       }
     });
@@ -173,27 +163,8 @@ export const activateCard = async (req: Request, res: Response): Promise<void> =
 
 export const updateCard = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { redirect_url } = req.body;
+    const { display_name, bio, profile_photo, social_links } = req.body;
     const userId = req.user?.userId;
-
-    if (!redirect_url) {
-      res.status(400).json({
-        success: false,
-        message: "redirect_url is required"
-      });
-      return;
-    }
-
-    // Validate URL format
-    try {
-      new URL(redirect_url);
-    } catch {
-      res.status(400).json({
-        success: false,
-        message: "Invalid URL format"
-      });
-      return;
-    }
 
     const card = await Card.findOne({ privy_id: userId });
 
@@ -205,18 +176,32 @@ export const updateCard = async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
-    // Update redirect URL
-    card.redirect_url = redirect_url;
+    if (bio && bio.length > 200) {
+      res.status(400).json({
+        success: false,
+        message: "Bio must be 200 characters or less"
+      });
+      return;
+    }
+
+    if (display_name !== undefined) card.display_name = display_name;
+    if (bio !== undefined) card.bio = bio;
+    if (profile_photo !== undefined) card.profile_photo = profile_photo;
+    if (social_links !== undefined) card.social_links = social_links;
+
     await card.save();
 
     res.json({
       success: true,
-      message: "Card updated successfully",
+      message: "Profile updated successfully",
       data: {
         card_id: card.card_id,
         user_id: card.user_id,
         username: card.username,
-        redirect_url: card.redirect_url,
+        display_name: card.display_name,
+        bio: card.bio,
+        profile_photo: card.profile_photo,
+        social_links: card.social_links,
         isActivated: card.isActivated
       }
     });
@@ -224,7 +209,7 @@ export const updateCard = async (req: Request, res: Response): Promise<void> => 
     console.error("Error updating card:", error);
     res.status(500).json({
       success: false,
-      message: "Failed to update card"
+      message: "Failed to update profile"
     });
   }
 };
@@ -243,9 +228,12 @@ export const getUserCards = async (req: Request, res: Response): Promise<void> =
       email: card.email,
       wallet: card.wallet,
       isActivated: card.isActivated,
-      redirect_url: card.redirect_url,
+      display_name: card.display_name,
+      bio: card.bio,
+      profile_photo: card.profile_photo,
+      social_links: card.social_links,
       taps_count: card.taps_count,
-      valid_redirects_count: card.valid_redirects_count,
+      profile_views: card.profile_views,
       createdAt: card.createdAt,
       updatedAt: card.updatedAt
     }));

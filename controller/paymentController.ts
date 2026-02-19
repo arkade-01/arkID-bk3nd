@@ -160,7 +160,7 @@ export const handlePaymentWebhook = async (req: Request, res: Response) => {
  */
 export const verifyPayment = async (req: Request, res: Response) => {
       try {
-            const { reference } = req.params;
+            const reference = req.params.reference as string;
 
             if (!reference) {
                   return res.status(400).json({
@@ -220,7 +220,7 @@ export const verifyPayment = async (req: Request, res: Response) => {
  */
 export const getOrderStatus = async (req: Request, res: Response) => {
       try {
-            const { reference } = req.params;
+            const reference = req.params.reference as string;
 
             if (!reference) {
                   return res.status(400).json({

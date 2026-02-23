@@ -1,8 +1,10 @@
 import express from "express";
 import cors from "cors";
+import swaggerUi from "swagger-ui-express";
 import { config } from "./config/config";
 import { connectDB } from "./config/dbConfig";
 import router from "./routes";
+import { swaggerSpec } from "./config/swagger";
 
 const app = express();
 
@@ -33,10 +35,11 @@ app.use(express.urlencoded({ extended: true }));
 
 
 
-app.get("/health", (req: express.Request, res: express.Response) => {
+app.get("/health", (_req: express.Request, res: express.Response) => {
       res.json({ status: "OK" });
 });
 
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use("/api", router);
 
 const startServer = async () => {

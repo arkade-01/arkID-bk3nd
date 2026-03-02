@@ -37,5 +37,10 @@ export const config = {
             SELLER_EMAIL: process.env.SELLER_EMAIL || "admin@arkid.com"
       },
       PRIVY_APP_ID: process.env.PRIVY_APP_ID || "",
-      PRIVY_SECRET: process.env.PRIVY_SECRET || ""
+      PRIVY_SECRET: process.env.PRIVY_SECRET || "",
+      IMAGEKIT: {
+            PUBLIC_KEY: process.env.IMAGEKIT_PUBLIC_KEY || "",
+            PRIVATE_KEY: process.env.IMAGEKIT_PRIVATE_KEY || "",
+            URL_ENDPOINT: process.env.IMAGEKIT_URL_ENDPOINT || ""
+      }
 }

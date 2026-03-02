@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { Card } from "../models/card";
+import { uploadPfp } from "../services/uploadService";
 
 // Helper function to generate sequential card IDs (ark000, ark001, ark002...)
 export const generateCardId = async (): Promise<string> => {
@@ -163,7 +164,7 @@ export const activateCard = async (req: Request, res: Response): Promise<void> =
 
 export const updateCard = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { display_name, bio, profile_photo, social_links } = req.body;
+    const { display_name, bio, social_links } = req.body;
     const userId = req.user?.userId;
 
     const card = await Card.findOne({ privy_id: userId });
@@ -186,8 +187,11 @@ export const updateCard = async (req: Request, res: Response): Promise<void> => 
 
     if (display_name !== undefined) card.display_name = display_name;
     if (bio !== undefined) card.bio = bio;
-    if (profile_photo !== undefined) card.profile_photo = profile_photo;
     if (social_links !== undefined) card.social_links = social_links;
+
+    if (req.file) {
+      card.profile_photo = await uploadPfp(req.file);
+    }
 
     await card.save();
 

@@ -1,13 +1,28 @@
 import { Request, Response, NextFunction } from "express";
 import privyClient from "../config/privyconfig";
 
-// Extend Express Request to include user information
+// Extend Express Request to include user and multer file information
 declare global {
   namespace Express {
+    namespace Multer {
+      interface File {
+        fieldname: string;
+        originalname: string;
+        encoding: string;
+        mimetype: string;
+        size: number;
+        destination: string;
+        filename: string;
+        path: string;
+        buffer: Buffer;
+      }
+    }
     interface Request {
       user?: {
         userId: string;
       };
+      file?: Multer.File;
+      files?: { [fieldname: string]: Multer.File[] } | Multer.File[];
     }
   }
 }

@@ -29,8 +29,10 @@ export const createOrder = async (req: Request, res: Response) => {
                   });
             }
 
+            const normalizedUsername = username.trim().toLowerCase();
+
             // Auto-generate card link from username
-            const cardLink = `${config.FRONTEND_URL}/scan/${username.trim()}`;
+            const cardLink = `${config.FRONTEND_URL}/scan/${normalizedUsername}`;
 
             // Check if there's a discount code
             if (discountCode && discountCode.trim() !== "") {
@@ -68,7 +70,7 @@ export const createOrder = async (req: Request, res: Response) => {
                   // Create card for user (discount code = free, so create immediately)
                   let createdCardId = "";
                   try {
-                        const newCard = await createCardForUser(username.trim(), email || "");
+                        const newCard = await createCardForUser(normalizedUsername, email || "");
                         createdCardId = newCard.card_id;
                         console.log(`✅ Card created for discount order, username: ${username}, card_id: ${createdCardId}`);
                   } catch (cardError) {

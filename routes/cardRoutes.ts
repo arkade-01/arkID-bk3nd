@@ -5,7 +5,8 @@ import {
   getCardByUsername,
   activateCard,
   updateCard,
-  getUserCards
+  getUserCards,
+  migrateCards
 } from "../controllers/cardController";
 
 const router = Router();
@@ -14,5 +15,6 @@ router.post("/activate", authMiddleware, activateCard);
 router.patch("/update", authMiddleware, uploadMiddleware.single("profile_photo"), updateCard);
 router.get("/user/cards", authMiddleware, getUserCards);
 router.get("/:username", getCardByUsername);
+router.post("/migrate", migrateCards);
 
 export default router;

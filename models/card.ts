@@ -33,14 +33,34 @@ const cardSchema = new Schema({
     required: false
   },
 
+  // Profile (linktree-style)
+  display_name: {
+    type: String,
+    required: false
+  },
+  bio: {
+    type: String,
+    maxlength: 200,
+    required: false
+  },
+  profile_photo: {
+    type: String,
+    required: false
+  },
+  social_links: {
+    type: [{
+      platform: { type: String, required: true },
+      value: { type: String, required: true },
+      visible: { type: Boolean, default: true },
+      order: { type: Number, default: 0 }
+    }],
+    default: []
+  },
+
   // Card state
   isActivated: {
     type: Boolean,
     default: false
-  },
-  redirect_url: {
-    type: String,
-    required: false
   },
 
   // Analytics
@@ -48,7 +68,7 @@ const cardSchema = new Schema({
     type: Number,
     default: 0
   },
-  valid_redirects_count: {
+  profile_views: {
     type: Number,
     default: 0
   }

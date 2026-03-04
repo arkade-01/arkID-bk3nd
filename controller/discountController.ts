@@ -95,15 +95,15 @@ export const getDiscounts = async (req: Request, res: Response) => {
  */
 export const checkDiscount = async (req: Request, res: Response) => {
       try {
-            const { code } = req.params;
-            
+            const code = req.params.code as string;
+
             if (!code) {
                   return res.status(400).json({
                         success: false,
                         message: "Discount code is required"
                   });
             }
-            
+
             const validation = await validateDiscountCode(code);
             
             return res.status(validation.valid ? 200 : 400).json({
@@ -125,15 +125,15 @@ export const checkDiscount = async (req: Request, res: Response) => {
  */
 export const deactivateDiscount = async (req: Request, res: Response) => {
       try {
-            const { code } = req.params;
-            
+            const code = req.params.code as string;
+
             if (!code) {
                   return res.status(400).json({
                         success: false,
                         message: "Discount code is required"
                   });
             }
-            
+
             const discount = await deactivateDiscountCode(code);
             
             if (!discount) {

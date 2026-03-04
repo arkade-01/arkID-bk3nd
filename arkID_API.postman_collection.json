@@ -1,9 +1,9 @@
 {
   "info": {
+    "_postman_id": "arkid-api-collection",
     "name": "arkID API",
-    "description": "Complete API collection for arkID NFC Card System",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "arkID"
+    "description": "Complete API collection for the arkID backend",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
     {
@@ -13,29 +13,57 @@
     },
     {
       "key": "authToken",
-      "value": "",
+      "value": "your-privy-bearer-token",
       "type": "string"
     }
   ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{authToken}}",
+        "type": "string"
+      }
+    ]
+  },
   "item": [
     {
-      "name": "Health Check",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/health",
-          "host": ["{{baseUrl}}"],
-          "path": ["health"]
-        },
-        "description": "Check if the API server is running"
-      }
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            },
+            "description": "Check if the API server is running."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "url": { "raw": "{{baseUrl}}/health" }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"status\": \"OK\"\n}"
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "Card",
       "item": [
         {
-          "name": "Get Card by Username (Public)",
+          "name": "Get Card by Username",
           "request": {
             "method": "GET",
             "header": [],
@@ -46,13 +74,111 @@
               "variable": [
                 {
                   "key": "username",
-                  "value": "john_doe",
-                  "description": "Username to look up"
+                  "value": "johndoe"
                 }
               ]
             },
-            "description": "Public endpoint to get card info. Increments taps_count automatically."
-          }
+            "description": "Public endpoint. Returns card profile. Increments taps_count on every call and profile_views if activated."
+          },
+          "response": [
+            {
+              "name": "200 OK — Activated Card",
+              "originalRequest": {
+                "method": "GET",
+                "url": { "raw": "{{baseUrl}}/api/card/johndoe" }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"username\": \"johndoe\",\n    \"isActivated\": true,\n    \"display_name\": \"John Doe\",\n    \"bio\": \"Software developer based in Lagos\",\n    \"profile_photo\": \"https://ik.imagekit.io/xxx/profile-photos/photo_abc123.jpg\",\n    \"social_links\": [\n      { \"platform\": \"twitter\", \"url\": \"https://twitter.com/johndoe\", \"visible\": true, \"order\": 0 },\n      { \"platform\": \"linkedin\", \"url\": \"https://linkedin.com/in/johndoe\", \"visible\": true, \"order\": 1 }\n    ],\n    \"taps_count\": 42\n  }\n}"
+            },
+            {
+              "name": "200 OK — Unactivated Card",
+              "originalRequest": {
+                "method": "GET",
+                "url": { "raw": "{{baseUrl}}/api/card/janedoe" }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"username\": \"janedoe\",\n    \"isActivated\": false,\n    \"display_name\": null,\n    \"bio\": null,\n    \"profile_photo\": null,\n    \"social_links\": [],\n    \"taps_count\": 1\n  }\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "originalRequest": {
+                "method": "GET",
+                "url": { "raw": "{{baseUrl}}/api/card/nobody" }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Card not found\"\n}"
+            },
+            {
+              "name": "500 Server Error",
+              "originalRequest": {
+                "method": "GET",
+                "url": { "raw": "{{baseUrl}}/api/card/johndoe" }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Failed to fetch card\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get My Cards",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/card/user/cards",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "card", "user", "cards"]
+            },
+            "description": "Returns all cards belonging to the authenticated user (matched by Privy DID)."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "url": { "raw": "{{baseUrl}}/api/card/user/cards" }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"card_id\": \"ark001\",\n      \"user_id\": \"usr_abc123\",\n      \"username\": \"johndoe\",\n      \"email\": \"john@example.com\",\n      \"wallet\": \"0xabcdef1234567890\",\n      \"isActivated\": true,\n      \"display_name\": \"John Doe\",\n      \"bio\": \"Software developer\",\n      \"profile_photo\": \"https://ik.imagekit.io/xxx/profile-photos/photo.jpg\",\n      \"social_links\": [],\n      \"taps_count\": 42,\n      \"profile_views\": 15,\n      \"createdAt\": \"2025-01-01T00:00:00.000Z\",\n      \"updatedAt\": \"2025-01-10T00:00:00.000Z\"\n    }\n  ]\n}"
+            },
+            {
+              "name": "401 Unauthorized — No Token",
+              "originalRequest": {
+                "method": "GET",
+                "url": { "raw": "{{baseUrl}}/api/card/user/cards" }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"No authorization token provided\"\n}"
+            },
+            {
+              "name": "401 Unauthorized — Invalid Token",
+              "originalRequest": {
+                "method": "GET",
+                "url": { "raw": "{{baseUrl}}/api/card/user/cards" }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Token verification failed\"\n}"
+            }
+          ]
         },
         {
           "name": "Activate Card",
@@ -61,73 +187,171 @@
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{authToken}}",
-                "type": "text"
+                "value": "Bearer {{authToken}}"
               },
               {
                 "key": "Content-Type",
-                "value": "application/json",
-                "type": "text"
+                "value": "application/json"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"card_id\": \"ark000\",\n  \"redirect_url\": \"https://example.com\"\n}"
+              "raw": "{\n  \"card_id\": \"ark001\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/card/activate",
               "host": ["{{baseUrl}}"],
               "path": ["api", "card", "activate"]
             },
-            "description": "Activate a card with redirect URL. Requires Privy authentication."
-          }
+            "description": "Links a purchased card to the authenticated user's Privy DID and marks it as activated. A user_id is generated on save via pre-save hook."
+          },
+          "response": [
+            {
+              "name": "200 OK — Activated",
+              "originalRequest": {
+                "method": "POST",
+                "url": { "raw": "{{baseUrl}}/api/card/activate" }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Card activated successfully\",\n  \"data\": {\n    \"card_id\": \"ark001\",\n    \"user_id\": \"usr_abc123\",\n    \"username\": \"johndoe\",\n    \"isActivated\": true\n  }\n}"
+            },
+            {
+              "name": "400 Already Activated",
+              "originalRequest": {
+                "method": "POST",
+                "url": { "raw": "{{baseUrl}}/api/card/activate" }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Card is already activated\"\n}"
+            },
+            {
+              "name": "400 Missing card_id",
+              "originalRequest": {
+                "method": "POST",
+                "url": { "raw": "{{baseUrl}}/api/card/activate" }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"card_id is required\"\n}"
+            },
+            {
+              "name": "404 Card Not Found",
+              "originalRequest": {
+                "method": "POST",
+                "url": { "raw": "{{baseUrl}}/api/card/activate" }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Card not found\"\n}"
+            },
+            {
+              "name": "401 Unauthorized",
+              "originalRequest": {
+                "method": "POST",
+                "url": { "raw": "{{baseUrl}}/api/card/activate" }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"No authorization token provided\"\n}"
+            }
+          ]
         },
         {
-          "name": "Update Card Redirect URL",
+          "name": "Update Card Profile",
           "request": {
             "method": "PATCH",
             "header": [
               {
                 "key": "Authorization",
-                "value": "Bearer {{authToken}}",
-                "type": "text"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json",
-                "type": "text"
+                "value": "Bearer {{authToken}}"
               }
             ],
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"redirect_url\": \"https://newurl.com\"\n}"
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "display_name",
+                  "value": "John Doe",
+                  "type": "text"
+                },
+                {
+                  "key": "bio",
+                  "value": "Software developer based in Lagos",
+                  "type": "text"
+                },
+                {
+                  "key": "social_links",
+                  "value": "[{\"platform\":\"twitter\",\"url\":\"https://twitter.com/johndoe\",\"visible\":true,\"order\":0}]",
+                  "type": "text"
+                },
+                {
+                  "key": "profile_photo",
+                  "type": "file",
+                  "src": "",
+                  "description": "Optional. Image file uploaded to ImageKit."
+                }
+              ]
             },
             "url": {
               "raw": "{{baseUrl}}/api/card/update",
               "host": ["{{baseUrl}}"],
               "path": ["api", "card", "update"]
             },
-            "description": "Update the redirect URL for an activated card. Requires Privy authentication."
-          }
-        },
-        {
-          "name": "Get User Cards",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{authToken}}",
-                "type": "text"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/card/user/cards",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "card", "user", "cards"]
+            "description": "Updates display name, bio, social links, and/or profile photo. All fields are optional. Must be multipart/form-data if uploading a photo."
+          },
+          "response": [
+            {
+              "name": "200 OK — Updated",
+              "originalRequest": {
+                "method": "PATCH",
+                "url": { "raw": "{{baseUrl}}/api/card/update" }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Profile updated successfully\",\n  \"data\": {\n    \"card_id\": \"ark001\",\n    \"user_id\": \"usr_abc123\",\n    \"username\": \"johndoe\",\n    \"display_name\": \"John Doe\",\n    \"bio\": \"Software developer based in Lagos\",\n    \"profile_photo\": \"https://ik.imagekit.io/xxx/profile-photos/photo_unique.jpg\",\n    \"social_links\": [\n      { \"platform\": \"twitter\", \"url\": \"https://twitter.com/johndoe\", \"visible\": true, \"order\": 0 }\n    ],\n    \"isActivated\": true\n  }\n}"
             },
-            "description": "Get all cards for the authenticated user. Requires Privy authentication."
-          }
+            {
+              "name": "400 Bio Too Long",
+              "originalRequest": {
+                "method": "PATCH",
+                "url": { "raw": "{{baseUrl}}/api/card/update" }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Bio must be 200 characters or less\"\n}"
+            },
+            {
+              "name": "404 Card Not Found",
+              "originalRequest": {
+                "method": "PATCH",
+                "url": { "raw": "{{baseUrl}}/api/card/update" }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Card not found for this user\"\n}"
+            },
+            {
+              "name": "401 Unauthorized",
+              "originalRequest": {
+                "method": "PATCH",
+                "url": { "raw": "{{baseUrl}}/api/card/update" }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"No authorization token provided\"\n}"
+            }
+          ]
         }
       ]
     },
@@ -141,21 +365,77 @@
             "header": [
               {
                 "key": "Content-Type",
-                "value": "application/json",
-                "type": "text"
+                "value": "application/json"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"John Doe\",\n  \"username\": \"john_doe\",\n  \"email\": \"john@example.com\",\n  \"phone\": \"+1234567890\",\n  \"address\": \"123 Main St\",\n  \"city\": \"Lagos\",\n  \"state\": \"Lagos\",\n  \"currency\": \"NGN\",\n  \"amount\": 10000,\n  \"discountCode\": \"\"\n}"
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"username\": \"JohnDoe\",\n  \"email\": \"john@example.com\",\n  \"phone\": \"+2348012345678\",\n  \"address\": \"12 Marina Street\",\n  \"city\": \"Lagos\",\n  \"state\": \"Lagos\",\n  \"currency\": \"NGN\",\n  \"amount\": 1500000,\n  \"discountCode\": \"\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/orders",
               "host": ["{{baseUrl}}"],
               "path": ["api", "orders"]
             },
-            "description": "Create a new order. Username is used to auto-generate card link. If discountCode is valid, order is completed immediately."
-          }
+            "description": "Creates an order. Username is automatically trimmed and lowercased. If a valid discountCode is provided, the card is created immediately (free). Otherwise a Paystack transaction is initialized and the card is created after successful payment via webhook/callback."
+          },
+          "response": [
+            {
+              "name": "201 Created — Paid Order (No Discount)",
+              "originalRequest": {
+                "method": "POST",
+                "url": { "raw": "{{baseUrl}}/api/orders" }
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Transaction initialized. Please complete payment.\",\n  \"data\": {\n    \"order\": {\n      \"_id\": \"664abc123def456\",\n      \"name\": \"John Doe\",\n      \"cardLink\": \"https://www.ark-id.xyz/scan/johndoe\",\n      \"email\": \"john@example.com\",\n      \"phone\": \"+2348012345678\",\n      \"address\": \"12 Marina Street\",\n      \"city\": \"Lagos\",\n      \"state\": \"Lagos\",\n      \"amount\": 1500000,\n      \"currency\": \"NGN\",\n      \"discount\": \"\",\n      \"status\": \"pending\",\n      \"reference\": \"ORD_1704067200000_x7k2m9\"\n    },\n    \"reference\": \"ORD_1704067200000_x7k2m9\"\n  },\n  \"paymentUrl\": \"https://checkout.paystack.com/xxxxxxxxxxx\"\n}"
+            },
+            {
+              "name": "201 Created — Free Order (With Discount)",
+              "originalRequest": {
+                "method": "POST",
+                "url": { "raw": "{{baseUrl}}/api/orders" }
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Order created with discount code\",\n  \"data\": {\n    \"_id\": \"664abc456def789\",\n    \"name\": \"John Doe\",\n    \"cardLink\": \"https://www.ark-id.xyz/scan/johndoe\",\n    \"email\": \"john@example.com\",\n    \"amount\": 0,\n    \"currency\": \"NGN\",\n    \"discount\": \"LAUNCH50\",\n    \"status\": \"completed\",\n    \"reference\": \"DISC_1704067200000\"\n  }\n}"
+            },
+            {
+              "name": "400 Invalid Discount Code",
+              "originalRequest": {
+                "method": "POST",
+                "url": { "raw": "{{baseUrl}}/api/orders" }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Discount code usage limit reached\"\n}"
+            },
+            {
+              "name": "400 Username Required",
+              "originalRequest": {
+                "method": "POST",
+                "url": { "raw": "{{baseUrl}}/api/orders" }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Username is required\"\n}"
+            },
+            {
+              "name": "500 Server Error",
+              "originalRequest": {
+                "method": "POST",
+                "url": { "raw": "{{baseUrl}}/api/orders" }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Failed to create order\",\n  \"error\": \"Some internal error message\"\n}"
+            }
+          ]
         }
       ]
     },
@@ -163,52 +443,150 @@
       "name": "Payments",
       "item": [
         {
-          "name": "Payment Callback",
+          "name": "Payment Callback (Paystack Redirect)",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/payments/callback?reference=ORD_123456789",
+              "raw": "{{baseUrl}}/api/payments/callback?reference=ORD_1704067200000_x7k2m9",
               "host": ["{{baseUrl}}"],
               "path": ["api", "payments", "callback"],
               "query": [
                 {
                   "key": "reference",
-                  "value": "ORD_123456789",
-                  "description": "Order reference from Paystack"
+                  "value": "ORD_1704067200000_x7k2m9"
                 }
               ]
             },
-            "description": "Paystack redirects user here after payment. Creates card and sends emails."
-          }
+            "description": "Paystack redirects the user here after payment. Verifies the transaction, updates order status, creates the card, sends confirmation emails, then redirects to the frontend."
+          },
+          "response": [
+            {
+              "name": "302 Redirect — Payment Success",
+              "originalRequest": {
+                "method": "GET",
+                "url": { "raw": "{{baseUrl}}/api/payments/callback?reference=ORD_xxx" }
+              },
+              "status": "Found",
+              "code": 302,
+              "header": [
+                {
+                  "key": "Location",
+                  "value": "https://www.ark-id.xyz/payment/success?reference=ORD_xxx&order=664abc123"
+                }
+              ],
+              "body": ""
+            },
+            {
+              "name": "302 Redirect — Payment Failed",
+              "originalRequest": {
+                "method": "GET",
+                "url": { "raw": "{{baseUrl}}/api/payments/callback?reference=ORD_xxx" }
+              },
+              "status": "Found",
+              "code": 302,
+              "header": [
+                {
+                  "key": "Location",
+                  "value": "https://www.ark-id.xyz/payment/failed?reference=ORD_xxx"
+                }
+              ],
+              "body": ""
+            },
+            {
+              "name": "302 Redirect — No Reference",
+              "originalRequest": {
+                "method": "GET",
+                "url": { "raw": "{{baseUrl}}/api/payments/callback" }
+              },
+              "status": "Found",
+              "code": 302,
+              "header": [
+                {
+                  "key": "Location",
+                  "value": "https://www.ark-id.xyz/payment/error?message=No reference provided"
+                }
+              ],
+              "body": ""
+            },
+            {
+              "name": "302 Redirect — Order Not Found",
+              "originalRequest": {
+                "method": "GET",
+                "url": { "raw": "{{baseUrl}}/api/payments/callback?reference=ORD_invalid" }
+              },
+              "status": "Found",
+              "code": 302,
+              "header": [
+                {
+                  "key": "Location",
+                  "value": "https://www.ark-id.xyz/payment/error?message=Order not found"
+                }
+              ],
+              "body": ""
+            }
+          ]
         },
         {
-          "name": "Payment Webhook",
+          "name": "Payment Webhook (Paystack Server)",
           "request": {
             "method": "POST",
             "header": [
               {
-                "key": "x-paystack-signature",
-                "value": "signature_hash",
-                "type": "text"
+                "key": "Content-Type",
+                "value": "application/json"
               },
               {
-                "key": "Content-Type",
-                "value": "application/json",
-                "type": "text"
+                "key": "x-paystack-signature",
+                "value": "your-sha512-hmac-signature"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"event\": \"charge.success\",\n  \"data\": {\n    \"reference\": \"ORD_123456789\",\n    \"status\": \"success\"\n  }\n}"
+              "raw": "{\n  \"event\": \"charge.success\",\n  \"data\": {\n    \"reference\": \"ORD_1704067200000_x7k2m9\",\n    \"id\": \"txn_123456\",\n    \"status\": \"success\"\n  }\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/payments/webhook",
               "host": ["{{baseUrl}}"],
               "path": ["api", "payments", "webhook"]
             },
-            "description": "Paystack webhook endpoint. Called by Paystack servers when payment status changes."
-          }
+            "description": "Called by Paystack servers on payment events. HMAC SHA-512 signature is validated against PAYSTACK_SECRET. Handles charge.success and charge.failed events."
+          },
+          "response": [
+            {
+              "name": "200 OK — Webhook Received",
+              "originalRequest": {
+                "method": "POST",
+                "url": { "raw": "{{baseUrl}}/api/payments/webhook" }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"received\": true\n}"
+            },
+            {
+              "name": "401 Invalid Signature",
+              "originalRequest": {
+                "method": "POST",
+                "url": { "raw": "{{baseUrl}}/api/payments/webhook" }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"error\": \"Invalid signature\"\n}"
+            },
+            {
+              "name": "500 Processing Failed",
+              "originalRequest": {
+                "method": "POST",
+                "url": { "raw": "{{baseUrl}}/api/payments/webhook" }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"error\": \"Webhook processing failed\"\n}"
+            }
+          ]
         },
         {
           "name": "Verify Payment",
@@ -222,13 +600,47 @@
               "variable": [
                 {
                   "key": "reference",
-                  "value": "ORD_123456789",
-                  "description": "Order reference"
+                  "value": "ORD_1704067200000_x7k2m9"
                 }
               ]
             },
-            "description": "Manually verify a payment status with Paystack"
-          }
+            "description": "Manually verify a payment with Paystack and sync the order status in the database."
+          },
+          "response": [
+            {
+              "name": "200 OK — Payment Verified",
+              "originalRequest": {
+                "method": "GET",
+                "url": { "raw": "{{baseUrl}}/api/payments/verify/ORD_xxx" }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Payment verified successfully\",\n  \"data\": {\n    \"paymentStatus\": \"success\",\n    \"order\": {\n      \"_id\": \"664abc123def456\",\n      \"reference\": \"ORD_1704067200000_x7k2m9\",\n      \"status\": \"completed\",\n      \"amount\": 1500000,\n      \"currency\": \"NGN\"\n    }\n  }\n}"
+            },
+            {
+              "name": "400 Payment Failed",
+              "originalRequest": {
+                "method": "GET",
+                "url": { "raw": "{{baseUrl}}/api/payments/verify/ORD_xxx" }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Payment verification failed\",\n  \"data\": {\n    \"paymentStatus\": \"failed\"\n  }\n}"
+            },
+            {
+              "name": "500 Server Error",
+              "originalRequest": {
+                "method": "GET",
+                "url": { "raw": "{{baseUrl}}/api/payments/verify/ORD_xxx" }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Failed to verify payment\"\n}"
+            }
+          ]
         },
         {
           "name": "Get Order Status",
@@ -242,13 +654,47 @@
               "variable": [
                 {
                   "key": "reference",
-                  "value": "ORD_123456789",
-                  "description": "Order reference"
+                  "value": "ORD_1704067200000_x7k2m9"
                 }
               ]
             },
-            "description": "Get order status by reference. Also checks with Paystack if order is pending."
-          }
+            "description": "Gets the current order status. If the order is still pending, it re-checks with Paystack and updates the DB before responding."
+          },
+          "response": [
+            {
+              "name": "200 OK — Completed",
+              "originalRequest": {
+                "method": "GET",
+                "url": { "raw": "{{baseUrl}}/api/payments/status/ORD_xxx" }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"reference\": \"ORD_1704067200000_x7k2m9\",\n    \"status\": \"completed\",\n    \"amount\": 1500000,\n    \"currency\": \"NGN\",\n    \"createdAt\": \"2025-01-01T00:00:00.000Z\"\n  }\n}"
+            },
+            {
+              "name": "200 OK — Pending",
+              "originalRequest": {
+                "method": "GET",
+                "url": { "raw": "{{baseUrl}}/api/payments/status/ORD_xxx" }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"reference\": \"ORD_1704067200000_x7k2m9\",\n    \"status\": \"pending\",\n    \"amount\": 1500000,\n    \"currency\": \"NGN\",\n    \"createdAt\": \"2025-01-01T00:00:00.000Z\"\n  }\n}"
+            },
+            {
+              "name": "404 Order Not Found",
+              "originalRequest": {
+                "method": "GET",
+                "url": { "raw": "{{baseUrl}}/api/payments/status/ORD_invalid" }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Order not found\"\n}"
+            }
+          ]
         }
       ]
     },
@@ -262,21 +708,112 @@
             "header": [
               {
                 "key": "Content-Type",
-                "value": "application/json",
-                "type": "text"
+                "value": "application/json"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"code\": \"SUMMER2024\",\n  \"description\": \"Summer promotion\",\n  \"maxUsage\": 100\n}"
+              "raw": "{\n  \"code\": \"LAUNCH50\",\n  \"description\": \"Launch promo — free card\",\n  \"usageLimit\": 100,\n  \"expiryDate\": \"2025-12-31T23:59:59.000Z\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/discounts",
               "host": ["{{baseUrl}}"],
               "path": ["api", "discounts"]
             },
-            "description": "Create a new discount code"
-          }
+            "description": "Creates a single discount code. Omit 'code' to auto-generate a random 8-char alphanumeric code. Code is stored uppercased. Max usage limit of null means unlimited."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": {
+                "method": "POST",
+                "url": { "raw": "{{baseUrl}}/api/discounts" }
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Discount code created successfully\",\n  \"data\": {\n    \"_id\": \"664def789abc123\",\n    \"code\": \"LAUNCH50\",\n    \"description\": \"Launch promo — free card\",\n    \"isActive\": true,\n    \"usageLimit\": 100,\n    \"usedCount\": 0,\n    \"expiryDate\": \"2025-12-31T23:59:59.000Z\",\n    \"createdAt\": \"2025-01-01T00:00:00.000Z\",\n    \"updatedAt\": \"2025-01-01T00:00:00.000Z\"\n  }\n}"
+            },
+            {
+              "name": "201 Created — Auto-Generated Code",
+              "originalRequest": {
+                "method": "POST",
+                "url": { "raw": "{{baseUrl}}/api/discounts" }
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Discount code created successfully\",\n  \"data\": {\n    \"_id\": \"664def789abc456\",\n    \"code\": \"AB12CD34\",\n    \"description\": \"\",\n    \"isActive\": true,\n    \"usageLimit\": null,\n    \"usedCount\": 0,\n    \"expiryDate\": null,\n    \"createdAt\": \"2025-01-01T00:00:00.000Z\",\n    \"updatedAt\": \"2025-01-01T00:00:00.000Z\"\n  }\n}"
+            },
+            {
+              "name": "500 Code Already Exists",
+              "originalRequest": {
+                "method": "POST",
+                "url": { "raw": "{{baseUrl}}/api/discounts" }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Discount code already exists\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Bulk Discount Codes",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"count\": 10,\n  \"description\": \"Batch promo codes\",\n  \"usageLimit\": 1,\n  \"expiryDate\": \"2025-12-31T23:59:59.000Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/discounts/bulk",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "discounts", "bulk"]
+            },
+            "description": "Generates multiple random 8-char alphanumeric discount codes at once. Max 1000 per request."
+          },
+          "response": [
+            {
+              "name": "201 Created — All Succeeded",
+              "originalRequest": {
+                "method": "POST",
+                "url": { "raw": "{{baseUrl}}/api/discounts/bulk" }
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Successfully created 10 discount codes\",\n  \"data\": {\n    \"success\": true,\n    \"created\": 10,\n    \"failed\": 0,\n    \"codes\": [\n      { \"_id\": \"664aaa001\", \"code\": \"AB12CD34\", \"isActive\": true, \"usedCount\": 0 },\n      { \"_id\": \"664aaa002\", \"code\": \"EF56GH78\", \"isActive\": true, \"usedCount\": 0 }\n    ],\n    \"errors\": []\n  }\n}"
+            },
+            {
+              "name": "201 Created — Partial Failures",
+              "originalRequest": {
+                "method": "POST",
+                "url": { "raw": "{{baseUrl}}/api/discounts/bulk" }
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Successfully created 9 discount codes, 1 failed\",\n  \"data\": {\n    \"success\": true,\n    \"created\": 9,\n    \"failed\": 1,\n    \"codes\": [],\n    \"errors\": [\n      { \"index\": 7, \"error\": \"Failed to generate unique code\" }\n    ]\n  }\n}"
+            },
+            {
+              "name": "400 Invalid Count",
+              "originalRequest": {
+                "method": "POST",
+                "url": { "raw": "{{baseUrl}}/api/discounts/bulk" }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Count must be greater than 0\"\n}"
+            }
+          ]
         },
         {
           "name": "Get All Discount Codes",
@@ -288,8 +825,21 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "discounts"]
             },
-            "description": "Get all discount codes"
-          }
+            "description": "Returns all discount codes sorted by createdAt descending."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "url": { "raw": "{{baseUrl}}/api/discounts" }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"_id\": \"664def789abc123\",\n      \"code\": \"LAUNCH50\",\n      \"description\": \"Launch promo — free card\",\n      \"isActive\": true,\n      \"usageLimit\": 100,\n      \"usedCount\": 3,\n      \"expiryDate\": \"2025-12-31T23:59:59.000Z\",\n      \"createdAt\": \"2025-01-01T00:00:00.000Z\",\n      \"updatedAt\": \"2025-01-03T00:00:00.000Z\"\n    },\n    {\n      \"_id\": \"664def789abc456\",\n      \"code\": \"AB12CD34\",\n      \"description\": \"\",\n      \"isActive\": false,\n      \"usageLimit\": 1,\n      \"usedCount\": 1,\n      \"expiryDate\": null,\n      \"createdAt\": \"2025-01-02T00:00:00.000Z\",\n      \"updatedAt\": \"2025-01-04T00:00:00.000Z\"\n    }\n  ]\n}"
+            }
+          ]
         },
         {
           "name": "Validate Discount Code",
@@ -303,45 +853,125 @@
               "variable": [
                 {
                   "key": "code",
-                  "value": "SUMMER2024",
-                  "description": "Discount code to validate"
+                  "value": "LAUNCH50"
                 }
               ]
             },
-            "description": "Validate if a discount code is valid and available"
-          }
+            "description": "Checks if a discount code is valid, active, not expired, and within usage limit. Does NOT increment usage count."
+          },
+          "response": [
+            {
+              "name": "200 OK — Valid",
+              "originalRequest": {
+                "method": "GET",
+                "url": { "raw": "{{baseUrl}}/api/discounts/validate/LAUNCH50" }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Discount code is valid\",\n  \"data\": {\n    \"_id\": \"664def789abc123\",\n    \"code\": \"LAUNCH50\",\n    \"isActive\": true,\n    \"usageLimit\": 100,\n    \"usedCount\": 3,\n    \"expiryDate\": \"2025-12-31T23:59:59.000Z\"\n  }\n}"
+            },
+            {
+              "name": "400 Not Found",
+              "originalRequest": {
+                "method": "GET",
+                "url": { "raw": "{{baseUrl}}/api/discounts/validate/BADCODE" }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Discount code not found\",\n  \"data\": null\n}"
+            },
+            {
+              "name": "400 Inactive",
+              "originalRequest": {
+                "method": "GET",
+                "url": { "raw": "{{baseUrl}}/api/discounts/validate/OLDCODE" }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Discount code is inactive\",\n  \"data\": null\n}"
+            },
+            {
+              "name": "400 Expired",
+              "originalRequest": {
+                "method": "GET",
+                "url": { "raw": "{{baseUrl}}/api/discounts/validate/XMAS24" }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Discount code has expired\",\n  \"data\": null\n}"
+            },
+            {
+              "name": "400 Usage Limit Reached",
+              "originalRequest": {
+                "method": "GET",
+                "url": { "raw": "{{baseUrl}}/api/discounts/validate/USED100" }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Discount code usage limit reached\",\n  \"data\": null\n}"
+            }
+          ]
         },
         {
-          "name": "Delete Discount Code",
+          "name": "Deactivate Discount Code",
           "request": {
-            "method": "DELETE",
+            "method": "PATCH",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/discounts/:code",
+              "raw": "{{baseUrl}}/api/discounts/deactivate/:code",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "discounts", ":code"],
+              "path": ["api", "discounts", "deactivate", ":code"],
               "variable": [
                 {
                   "key": "code",
-                  "value": "SUMMER2024",
-                  "description": "Discount code to delete"
+                  "value": "LAUNCH50"
                 }
               ]
             },
-            "description": "Delete a discount code"
-          }
+            "description": "Sets isActive to false on the given discount code. The code remains in the database but can no longer be used."
+          },
+          "response": [
+            {
+              "name": "200 OK — Deactivated",
+              "originalRequest": {
+                "method": "PATCH",
+                "url": { "raw": "{{baseUrl}}/api/discounts/deactivate/LAUNCH50" }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Discount code deactivated successfully\",\n  \"data\": {\n    \"_id\": \"664def789abc123\",\n    \"code\": \"LAUNCH50\",\n    \"description\": \"Launch promo — free card\",\n    \"isActive\": false,\n    \"usageLimit\": 100,\n    \"usedCount\": 3,\n    \"expiryDate\": \"2025-12-31T23:59:59.000Z\"\n  }\n}"
+            },
+            {
+              "name": "404 Code Not Found",
+              "originalRequest": {
+                "method": "PATCH",
+                "url": { "raw": "{{baseUrl}}/api/discounts/deactivate/NOCODE" }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Discount code not found\"\n}"
+            },
+            {
+              "name": "500 Server Error",
+              "originalRequest": {
+                "method": "PATCH",
+                "url": { "raw": "{{baseUrl}}/api/discounts/deactivate/LAUNCH50" }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Failed to deactivate discount code\"\n}"
+            }
+          ]
         }
       ]
     }
-  ],
-  "auth": {
-    "type": "bearer",
-    "bearer": [
-      {
-        "key": "token",
-        "value": "{{authToken}}",
-        "type": "string"
-      }
-    ]
-  }
+  ]
 }

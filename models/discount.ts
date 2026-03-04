@@ -42,8 +42,8 @@ const discountSchema = new Schema({
       }
 });
 
-// Add index for faster lookups
-discountSchema.index({ code: 1 });
+// Add unique index for faster lookups and to prevent duplicate codes
+discountSchema.index({ code: 1 }, { unique: true });
 
 // Update the updatedAt timestamp before saving
 discountSchema.pre('save', function(next) {

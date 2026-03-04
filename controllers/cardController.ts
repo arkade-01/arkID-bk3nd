@@ -7,7 +7,7 @@ export const generateCardId = async (): Promise<string> => {
   // Get the highest card_id number
   const lastCard = await Card.findOne()
     .sort({ card_id: -1 })
-    .select('card_id')
+    .select("card_id")
     .lean();
 
   let nextNumber = 0;
@@ -21,7 +21,7 @@ export const generateCardId = async (): Promise<string> => {
   }
 
   // Format with leading zeros (ark000, ark001, etc.)
-  const cardId = `ark${nextNumber.toString().padStart(3, '0')}`;
+  const cardId = `ark${nextNumber.toString().padStart(3, "0")}`;
 
   return cardId;
 };
@@ -30,10 +30,10 @@ export const generateCardId = async (): Promise<string> => {
 export const createCardForUser = async (
   username: string,
   email?: string,
-  card_id?: string
+  card_id?: string,
 ) => {
   // Generate card_id if not provided
-  const finalCardId = card_id || await generateCardId();
+  const finalCardId = card_id || (await generateCardId());
 
   // Check if card_id already exists
   const existingCard = await Card.findOne({ card_id: finalCardId });
@@ -54,14 +54,17 @@ export const createCardForUser = async (
     email: email || undefined,
     isActivated: false,
     taps_count: 0,
-    profile_views: 0
+    profile_views: 0,
   });
 
   await newCard.save();
   return newCard;
 };
 
-export const getCardByUsername = async (req: Request, res: Response): Promise<void> => {
+export const getCardByUsername = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
   try {
     const { username } = req.params;
 
@@ -70,7 +73,7 @@ export const getCardByUsername = async (req: Request, res: Response): Promise<vo
     if (!card) {
       res.status(404).json({
         success: false,
-        message: "Card not found"
+        message: "Card not found",
       });
       return;
     }
@@ -92,21 +95,26 @@ export const getCardByUsername = async (req: Request, res: Response): Promise<vo
         bio: card.bio || null,
         profile_photo: card.profile_photo || null,
         social_links: card.isActivated
-          ? card.social_links.filter((link: any) => link.visible).sort((a: any, b: any) => a.order - b.order)
+          ? card.social_links
+              .filter((link: any) => link.visible)
+              .sort((a: any, b: any) => a.order - b.order)
           : [],
-        taps_count: card.taps_count
-      }
+        taps_count: card.taps_count,
+      },
     });
   } catch (error) {
     console.error("Error fetching card:", error);
     res.status(500).json({
       success: false,
-      message: "Failed to fetch card"
+      message: "Failed to fetch card",
     });
   }
 };
 
-export const activateCard = async (req: Request, res: Response): Promise<void> => {
+export const activateCard = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
   try {
     const { card_id } = req.body;
     const privyId = req.user?.userId; // Privy DID from auth
@@ -114,7 +122,7 @@ export const activateCard = async (req: Request, res: Response): Promise<void> =
     if (!card_id) {
       res.status(400).json({
         success: false,
-        message: "card_id is required"
+        message: "card_id is required",
       });
       return;
     }
@@ -124,7 +132,7 @@ export const activateCard = async (req: Request, res: Response): Promise<void> =
     if (!card) {
       res.status(404).json({
         success: false,
-        message: "Card not found"
+        message: "Card not found",
       });
       return;
     }
@@ -133,7 +141,7 @@ export const activateCard = async (req: Request, res: Response): Promise<void> =
     if (card.isActivated) {
       res.status(400).json({
         success: false,
-        message: "Card is already activated"
+        message: "Card is already activated",
       });
       return;
     }
@@ -150,19 +158,22 @@ export const activateCard = async (req: Request, res: Response): Promise<void> =
         card_id: card.card_id,
         user_id: card.user_id,
         username: card.username,
-        isActivated: card.isActivated
-      }
+        isActivated: card.isActivated,
+      },
     });
   } catch (error) {
     console.error("Error activating card:", error);
     res.status(500).json({
       success: false,
-      message: "Failed to activate card"
+      message: "Failed to activate card",
     });
   }
 };
 
-export const updateCard = async (req: Request, res: Response): Promise<void> => {
+export const updateCard = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
   try {
     const { display_name, bio, social_links } = req.body;
     const userId = req.user?.userId;
@@ -172,7 +183,7 @@ export const updateCard = async (req: Request, res: Response): Promise<void> => 
     if (!card) {
       res.status(404).json({
         success: false,
-        message: "Card not found for this user"
+        message: "Card not found for this user",
       });
       return;
     }
@@ -180,7 +191,7 @@ export const updateCard = async (req: Request, res: Response): Promise<void> => 
     if (bio && bio.length > 200) {
       res.status(400).json({
         success: false,
-        message: "Bio must be 200 characters or less"
+        message: "Bio must be 200 characters or less",
       });
       return;
     }
@@ -206,26 +217,29 @@ export const updateCard = async (req: Request, res: Response): Promise<void> => 
         bio: card.bio,
         profile_photo: card.profile_photo,
         social_links: card.social_links,
-        isActivated: card.isActivated
-      }
+        isActivated: card.isActivated,
+      },
     });
   } catch (error) {
     console.error("Error updating card:", error);
     res.status(500).json({
       success: false,
-      message: "Failed to update profile"
+      message: "Failed to update profile",
     });
   }
 };
 
-export const getUserCards = async (req: Request, res: Response): Promise<void> => {
+export const getUserCards = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
   try {
     const userId = req.user?.userId; // This is Privy DID
 
     const cards = await Card.find({ privy_id: userId });
 
     // Filter out sensitive fields
-    const filteredCards = cards.map(card => ({
+    const filteredCards = cards.map((card) => ({
       card_id: card.card_id,
       user_id: card.user_id,
       username: card.username,
@@ -239,18 +253,43 @@ export const getUserCards = async (req: Request, res: Response): Promise<void> =
       taps_count: card.taps_count,
       profile_views: card.profile_views,
       createdAt: card.createdAt,
-      updatedAt: card.updatedAt
+      updatedAt: card.updatedAt,
     }));
 
     res.json({
       success: true,
-      data: filteredCards
+      data: filteredCards,
     });
   } catch (error) {
     console.error("Error fetching user cards:", error);
     res.status(500).json({
       success: false,
-      message: "Failed to fetch user cards"
+      message: "Failed to fetch user cards",
+    });
+  }
+};
+
+export const migrateCards = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    // Target ONLY cards that are currently activated, and set them to false
+    const result = await Card.updateMany(
+      { isActivated: true },
+      { $set: { isActivated: false } },
+    );
+
+    res.json({
+      success: true,
+      message: "All activated cards have been set to false.",
+      data: result, // Returns the stats: { matchedCount, modifiedCount, etc. }
+    });
+  } catch (error) {
+    console.error("Error migrating cards:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to migrate cards",
     });
   }
 };

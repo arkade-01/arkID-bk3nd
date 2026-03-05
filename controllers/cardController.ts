@@ -198,7 +198,22 @@ export const updateCard = async (
 
     if (display_name !== undefined) card.display_name = display_name;
     if (bio !== undefined) card.bio = bio;
-    if (social_links !== undefined) card.social_links = social_links;
+    if (social_links !== undefined) {
+      try {
+        // Check if it's a string (from form-data) and parse it
+        card.social_links =
+          typeof social_links === "string"
+            ? JSON.parse(social_links)
+            : social_links;
+      } catch (parseError) {
+        res.status(400).json({
+          success: false,
+          message:
+            "Invalid format for social_links. It must be a valid JSON array.",
+        });
+        return;
+      }
+    }
 
     if (req.file) {
       card.profile_photo = await uploadPfp(req.file);

@@ -50,7 +50,7 @@ const cardSchema = new Schema({
   social_links: {
     type: [{
       platform: { type: String, required: true },
-      value: { type: String, required: true },
+      url: { type: String, required: true },
       visible: { type: Boolean, default: true },
       order: { type: Number, default: 0 }
     }],

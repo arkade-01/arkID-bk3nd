@@ -6,12 +6,14 @@ import {
   activateCard,
   updateCard,
   getUserCards,
-  migrateCards
+  migrateCards,
+  getCardStatus
 } from "../controllers/cardController";
 
 const router = Router();
 
 router.post("/activate", authMiddleware, activateCard);
+router.get(":username/status", getCardStatus);
 router.patch("/update", authMiddleware, uploadMiddleware.single("image"), updateCard);
 router.get("/user/cards", authMiddleware, getUserCards);
 router.get("/:username", getCardByUsername);

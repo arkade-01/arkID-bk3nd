@@ -38,6 +38,11 @@ export const config = {
       },
       PRIVY_APP_ID: process.env.PRIVY_APP_ID || "",
       PRIVY_SECRET: process.env.PRIVY_SECRET || "",
+
+      // Privy userIds (DIDs) allowed to access /admin routes
+      ADMIN_USER_IDS: process.env.ADMIN_USER_IDS
+            ? process.env.ADMIN_USER_IDS.split(',').map(id => id.trim()).filter(Boolean)
+            : [],
       IMAGEKIT: {
             PUBLIC_KEY: process.env.IMAGEKIT_PUBLIC_KEY || "",
             PRIVATE_KEY: process.env.IMAGEKIT_PRIVATE_KEY || "",

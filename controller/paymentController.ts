@@ -4,6 +4,7 @@ import { Sales } from "../models/sales";
 import { config } from "../config/config";
 import { sendPaymentSuccessEmail, sendOrderReceivedEmail } from "../services/emailService";
 import { createCardForUser } from "../controllers/cardController";
+import { setPaymentStatus, setProvisionStatus, setEmailStatus } from "../services/orderStatusService";
 import crypto from "crypto";
 
 /**
@@ -27,14 +28,9 @@ export const handlePaymentCallback = async (req: Request, res: Response) => {
 
             if (verification.data.status === "success") {
                   // Update order status in database
-                  const order = await Sales.findOneAndUpdate(
-                        { reference: transactionReference },
-                        { 
-                              status: "completed",
-                              transactionId: verification.data.reference
-                        },
-                        { new: true }
-                  );
+                  const order = await setPaymentStatus(transactionReference, "verified", {
+                        transactionId: verification.data.reference
+                  });
 
                   if (!order) {
                         const redirectUrl = config.IS_DEVELOPMENT ? config.FRONTEND_URL_DEV : config.FRONTEND_URL_PROD;
@@ -51,8 +47,11 @@ export const handlePaymentCallback = async (req: Request, res: Response) => {
 
                         const newCard = await createCardForUser(username, order.email || "");
                         createdCardId = newCard.card_id;
+                        await setProvisionStatus(order.reference, "provisioned");
                         console.log(`✅ Card created for username: ${username}, card_id: ${createdCardId}`);
                   } catch (cardError) {
+                        const message = cardError instanceof Error ? cardError.message : "Card creation failed";
+                        await setProvisionStatus(order.reference, "failed", message);
                         console.error("⚠️ Card creation failed:", cardError);
                         // Don't fail the payment callback if card creation fails
                         // You might want to handle this separately
@@ -82,9 +81,12 @@ export const handlePaymentCallback = async (req: Request, res: Response) => {
                         
                         // Notify seller/admin
                         await sendOrderReceivedEmail(config.EMAIL.SELLER_EMAIL, orderDetails);
-                        
+
+                        await setEmailStatus(order.reference, "sent");
                         console.log(`✅ Emails sent for order ${order.reference}`);
                   } catch (emailError) {
+                        const message = emailError instanceof Error ? emailError.message : "Email sending failed";
+                        await setEmailStatus(order.reference, "failed", message);
                         console.error("⚠️ Email sending failed:", emailError);
                         // Don't fail the callback if email fails
                   }
@@ -96,10 +98,9 @@ export const handlePaymentCallback = async (req: Request, res: Response) => {
                   );
             } else {
                   // Payment failed or was cancelled
-                  await Sales.findOneAndUpdate(
-                        { reference: transactionReference },
-                        { status: "failed" }
-                  );
+                  await setPaymentStatus(transactionReference, "failed", {
+                        error: "Payment not successful at gateway"
+                  });
 
                   const redirectUrl = config.IS_DEVELOPMENT ? config.FRONTEND_URL_DEV : config.FRONTEND_URL_PROD;
                   return res.redirect(
@@ -174,14 +175,9 @@ export const verifyPayment = async (req: Request, res: Response) => {
 
             // Update order status
             if (verification.data.status === "success") {
-                  const order = await Sales.findOneAndUpdate(
-                        { reference },
-                        { 
-                              status: "completed",
-                              transactionId: verification.data.reference
-                        },
-                        { new: true }
-                  );
+                  const order = await setPaymentStatus(reference, "verified", {
+                        transactionId: verification.data.reference
+                  });
 
                   return res.status(200).json({
                         success: true,
@@ -192,10 +188,9 @@ export const verifyPayment = async (req: Request, res: Response) => {
                         }
                   });
             } else {
-                  await Sales.findOneAndUpdate(
-                        { reference },
-                        { status: "failed" }
-                  );
+                  await setPaymentStatus(reference, "failed", {
+                        error: "Payment verification failed at gateway"
+                  });
 
                   return res.status(400).json({
                         success: false,
@@ -229,7 +224,7 @@ export const getOrderStatus = async (req: Request, res: Response) => {
                   });
             }
 
-            const order = await Sales.findOne({ reference });
+            let order = await Sales.findOne({ reference });
 
             if (!order) {
                   return res.status(404).json({
@@ -238,20 +233,21 @@ export const getOrderStatus = async (req: Request, res: Response) => {
                   });
             }
 
-            // If order is still pending, check with Paystack for updates
-            if (order.status === "pending") {
+            // If payment is still pending, check with Paystack for updates
+            if (order.payment_status === "pending") {
                   try {
                         const verification = await verifyTransaction(reference);
-                        
+
                         if (verification.data.status === "success") {
-                              // Update to completed
-                              order.status = "completed";
-                              order.transactionId = verification.data.reference;
-                              await order.save();
+                              const updated = await setPaymentStatus(reference, "verified", {
+                                    transactionId: verification.data.reference
+                              });
+                              if (updated) order = updated;
                         } else if (verification.data.status === "failed") {
-                              // Update to failed
-                              order.status = "failed";
-                              await order.save();
+                              const updated = await setPaymentStatus(reference, "failed", {
+                                    error: "Payment failed at gateway"
+                              });
+                              if (updated) order = updated;
                         }
                         // If still pending on Paystack, leave as pending
                   } catch (error) {
@@ -265,6 +261,10 @@ export const getOrderStatus = async (req: Request, res: Response) => {
                   data: {
                         reference: order.reference,
                         status: order.status,
+                        payment_status: order.payment_status,
+                        provision_status: order.provision_status,
+                        email_status: order.email_status,
+                        last_error: order.last_error,
                         amount: order.amount,
                         currency: order.currency,
                         createdAt: order.createdAt
@@ -284,22 +284,20 @@ async function handleSuccessfulCharge(data: any) {
       try {
             const reference = data.reference;
 
-            const order = await Sales.findOneAndUpdate(
-                  { reference },
-                  {
-                        status: "completed",
-                        transactionId: data.id || reference
-                  },
-                  { new: true }
-            );
+            const order = await setPaymentStatus(reference, "verified", {
+                  transactionId: data.id || reference
+            });
 
             // Create card for user after successful payment (webhook)
             if (order) {
                   try {
                         const username = order.cardLink.split('/').pop() || `user_${Date.now()}`;
                         await createCardForUser(username, order.email || "");
+                        await setProvisionStatus(reference, "provisioned");
                         console.log(`✅ Card created via webhook for username: ${username}`);
                   } catch (cardError) {
+                        const message = cardError instanceof Error ? cardError.message : "Card creation failed";
+                        await setProvisionStatus(reference, "failed", message);
                         console.error("⚠️ Card creation failed in webhook:", cardError);
                   }
             }
@@ -313,11 +311,10 @@ async function handleSuccessfulCharge(data: any) {
 async function handleFailedCharge(data: any) {
       try {
             const reference = data.reference;
-            
-            await Sales.findOneAndUpdate(
-                  { reference },
-                  { status: "failed" }
-            );
+
+            await setPaymentStatus(reference, "failed", {
+                  error: data.gateway_response || "Charge failed at gateway"
+            });
 
             console.log(`Payment failed for reference: ${reference}`);
       } catch (error) {

@@ -1,18 +1,10 @@
 import { Router } from "express";
-import {
-      createDiscount,
-      createMultipleDiscounts,
-      getDiscounts,
-      checkDiscount,
-      deactivateDiscount
-} from "../controller/discountController";
+import { checkDiscount } from "../controller/discountController";
 
 const router = Router();
 
-router.post("/", createDiscount);
-router.post("/bulk", createMultipleDiscounts);
-router.get("/", getDiscounts);
+// Public: used by the checkout flow to validate a code before purchase.
+// Management endpoints (create/list/deactivate) live under /admin/discounts.
 router.get("/validate/:code", checkDiscount);
-router.patch("/deactivate/:code", deactivateDiscount);
 
 export default router;

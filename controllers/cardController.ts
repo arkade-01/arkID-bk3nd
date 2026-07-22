@@ -111,6 +111,41 @@ export const getCardByUsername = async (
   }
 };
 
+export const checkUsernameAvailability = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const username = String(req.params.username || "");
+
+    if (!username.trim()) {
+      res.status(400).json({
+        success: false,
+        message: "Username is required",
+      });
+      return;
+    }
+
+    const normalizedUsername = username.trim().toLowerCase();
+
+    const existingCard = await Card.findOne({ username: normalizedUsername });
+
+    res.json({
+      success: true,
+      data: {
+        username: normalizedUsername,
+        available: !existingCard,
+      },
+    });
+  } catch (error) {
+    console.error("Error checking username availability:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to check username availability",
+    });
+  }
+};
+
 export const getCardStatus= async (
   req: Request,
   res: Response,

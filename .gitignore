@@ -49,3 +49,6 @@ temp/
 # Keep example files
 !app.example.ts
 
+# CI/CD workflow untracked locally (kept on disk, not committed)
+.github/workflows/deploy.yml
+

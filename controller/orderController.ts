@@ -4,6 +4,7 @@ import { Sales } from "../models/sales";
 import { validateDiscountCode, incrementDiscountUsage } from "../services/discountService";
 import { sendDiscountAppliedEmail, sendOrderReceivedEmail } from "../services/emailService";
 import { createCardForUser } from "../controllers/cardController";
+import { setProvisionStatus, setEmailStatus } from "../services/orderStatusService";
 import { config } from "../config/config";
 
 export const createOrder = async (req: Request, res: Response) => {
@@ -61,9 +62,11 @@ export const createOrder = async (req: Request, res: Response) => {
                         amount: 0,
                         transactionId: "DISCOUNT_APPLIED",
                         reference: `DISC_${Date.now()}`,
-                        status: "completed"
+                        status: "completed",
+                        payment_status: "verified",
+                        attempts: 1
                   });
-                  
+
                   // Increment the usage count of the discount code
                   await incrementDiscountUsage(discountCode);
 
@@ -72,8 +75,11 @@ export const createOrder = async (req: Request, res: Response) => {
                   try {
                         const newCard = await createCardForUser(normalizedUsername, email || "");
                         createdCardId = newCard.card_id;
+                        await setProvisionStatus(sales.reference, "provisioned");
                         console.log(`✅ Card created for discount order, username: ${username}, card_id: ${createdCardId}`);
                   } catch (cardError) {
+                        const message = cardError instanceof Error ? cardError.message : "Card creation failed";
+                        await setProvisionStatus(sales.reference, "failed", message);
                         console.error("⚠️ Card creation failed for discount order:", cardError);
                   }
 
@@ -102,9 +108,12 @@ export const createOrder = async (req: Request, res: Response) => {
                         
                         // Notify seller/admin
                         await sendOrderReceivedEmail(config.EMAIL.SELLER_EMAIL, orderDetails);
-                        
+
+                        await setEmailStatus(sales.reference, "sent");
                         console.log(`✅ Emails sent for discount order ${sales.reference}`);
                   } catch (emailError) {
+                        const message = emailError instanceof Error ? emailError.message : "Email sending failed";
+                        await setEmailStatus(sales.reference, "failed", message);
                         console.error("⚠️ Email sending failed:", emailError);
                         // Don't fail the order if email fails
                   }

@@ -1,18 +1,9 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import { config } from './config';
 
 export type EmailPurpose = 'Order Received' | 'Payment Successful' | 'Discount Code Applied';
 
-export const transporter = nodemailer.createTransport({
-  service: config.EMAIL.SERVICE,
-  auth: {
-    user: config.EMAIL.USER,
-    pass: config.EMAIL.PASS
-  },
-  connectionTimeout: 10000,
-  greetingTimeout: 10000,
-  socketTimeout: 10000
-});
+export const resend = new Resend(config.EMAIL.RESEND_API_KEY);
 
 export const mailConfig = {
   from: config.EMAIL.FROM,

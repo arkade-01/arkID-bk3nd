@@ -29,9 +29,7 @@ export const config = {
             ? process.env.CORS_ORIGINS.split(',').map(origin => origin.trim())
             : [],
       EMAIL: {
-            SERVICE: process.env.EMAIL_SERVICE || "gmail",
-            USER: process.env.EMAIL_USER || "",
-            PASS: process.env.EMAIL_PASS || "",
+            RESEND_API_KEY: process.env.RESEND_API_KEY || "",
             FROM: process.env.EMAIL_FROM || "",
             SUBJECT_PREFIX: process.env.EMAIL_SUBJECT_PREFIX || "[arkID] ",
             SELLER_EMAIL: process.env.SELLER_EMAIL || "admin@arkid.com"

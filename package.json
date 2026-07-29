@@ -21,15 +21,14 @@
     "@types/express": "^5.0.3",
     "@types/multer": "^2.0.0",
     "@types/node": "^24.9.1",
-    "@types/nodemailer": "^7.0.2",
     "axios": "^1.12.2",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "mongoose": "^8.19.1",
     "multer": "^2.1.0",
-    "nodemailer": "^7.0.9",
     "nodemon": "^3.1.10",
+    "resend": "^6.18.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   }

@@ -1,6 +1,15 @@
-import { transporter, mailConfig, getEmailSubject } from '../config/nodemailerConfig';
+import { resend, mailConfig, getEmailSubject } from '../config/resendConfig';
 import { paymentSuccessfulTemplate, orderReceivedTemplate, discountAppliedTemplate } from './emailTemplates';
 import path from 'path';
+import fs from 'fs';
+
+function getLogoAttachment() {
+      return {
+            filename: 'logo.png',
+            content: fs.readFileSync(path.join(process.cwd(), 'Logo (2).png')),
+            contentId: 'logo' // same cid as in the html img src
+      };
+}
 
 interface OrderDetails {
       name: string;
@@ -24,20 +33,15 @@ export const sendPaymentSuccessEmail = async (
       orderDetails: OrderDetails
 ): Promise<void> => {
       try {
-            // Handle both dev (ts-node) and production (compiled js) paths
-            const logoPath = path.join(process.cwd(), 'Logo (2).png');
-
-            await transporter.sendMail({
+            const { error } = await resend.emails.send({
                   from: mailConfig.from,
                   to: customerEmail,
                   subject: getEmailSubject('Payment Successful'),
                   html: paymentSuccessfulTemplate(orderDetails),
-                  attachments: [{
-                        filename: 'logo.png',
-                        path: logoPath,
-                        cid: 'logo' // same cid as in the html img src
-                  }]
+                  attachments: [getLogoAttachment()]
             });
+
+            if (error) throw error;
 
             console.log(`✅ Payment success email sent to ${customerEmail}`);
       } catch (error) {
@@ -54,20 +58,15 @@ export const sendOrderReceivedEmail = async (
       orderDetails: OrderDetails
 ): Promise<void> => {
       try {
-            // Handle both dev (ts-node) and production (compiled js) paths
-            const logoPath = path.join(process.cwd(), 'Logo (2).png');
-
-            await transporter.sendMail({
+            const { error } = await resend.emails.send({
                   from: mailConfig.from,
                   to: sellerEmail,
                   subject: getEmailSubject('Order Received'),
                   html: orderReceivedTemplate(orderDetails),
-                  attachments: [{
-                        filename: 'logo.png',
-                        path: logoPath,
-                        cid: 'logo'
-                  }]
+                  attachments: [getLogoAttachment()]
             });
+
+            if (error) throw error;
 
             console.log(`✅ Order notification sent to seller ${sellerEmail}`);
       } catch (error) {
@@ -84,20 +83,15 @@ export const sendDiscountAppliedEmail = async (
       orderDetails: OrderDetails
 ): Promise<void> => {
       try {
-            // Handle both dev (ts-node) and production (compiled js) paths
-            const logoPath = path.join(process.cwd(), 'Logo (2).png');
-
-            await transporter.sendMail({
+            const { error } = await resend.emails.send({
                   from: mailConfig.from,
                   to: customerEmail,
                   subject: getEmailSubject('Discount Code Applied'),
                   html: discountAppliedTemplate(orderDetails),
-                  attachments: [{
-                        filename: 'logo.png',
-                        path: logoPath,
-                        cid: 'logo'
-                  }]
+                  attachments: [getLogoAttachment()]
             });
+
+            if (error) throw error;
 
             console.log(`✅ Discount applied email sent to ${customerEmail}`);
       } catch (error) {

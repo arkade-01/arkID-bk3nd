@@ -57,39 +57,42 @@ export const handlePaymentCallback = async (req: Request, res: Response) => {
                         // You might want to handle this separately
                   }
 
-                  // Send emails to buyer and seller
-                  try {
-                        const orderDetails = {
-                              name: order.name,
-                              email: order.email || "",
-                              phone: order.phone,
-                              address: order.address,
-                              city: order.city,
-                              state: order.state,
-                              cardLink: order.cardLink,
-                              cardId: createdCardId,
-                              reference: order.reference,
-                              amount: order.amount,
-                              currency: order.currency,
-                              discount: order.discount || ""
-                        };
+                  // Send emails to buyer and seller.
+                  // Not awaited: a slow/unreachable SMTP server (e.g. Gmail timing out
+                  // from Railway) must never delay the user's redirect below.
+                  const orderDetails = {
+                        name: order.name,
+                        email: order.email || "",
+                        phone: order.phone,
+                        address: order.address,
+                        city: order.city,
+                        state: order.state,
+                        cardLink: order.cardLink,
+                        cardId: createdCardId,
+                        reference: order.reference,
+                        amount: order.amount,
+                        currency: order.currency,
+                        discount: order.discount || ""
+                  };
 
-                        // Send confirmation to buyer (only if email exists)
-                        if (order.email) {
-                              await sendPaymentSuccessEmail(order.email, orderDetails);
+                  (async () => {
+                        try {
+                              // Send confirmation to buyer (only if email exists)
+                              if (order.email) {
+                                    await sendPaymentSuccessEmail(order.email, orderDetails);
+                              }
+
+                              // Notify seller/admin
+                              await sendOrderReceivedEmail(config.EMAIL.SELLER_EMAIL, orderDetails);
+
+                              await setEmailStatus(order.reference, "sent");
+                              console.log(`✅ Emails sent for order ${order.reference}`);
+                        } catch (emailError) {
+                              const message = emailError instanceof Error ? emailError.message : "Email sending failed";
+                              await setEmailStatus(order.reference, "failed", message);
+                              console.error("⚠️ Email sending failed:", emailError);
                         }
-                        
-                        // Notify seller/admin
-                        await sendOrderReceivedEmail(config.EMAIL.SELLER_EMAIL, orderDetails);
-
-                        await setEmailStatus(order.reference, "sent");
-                        console.log(`✅ Emails sent for order ${order.reference}`);
-                  } catch (emailError) {
-                        const message = emailError instanceof Error ? emailError.message : "Email sending failed";
-                        await setEmailStatus(order.reference, "failed", message);
-                        console.error("⚠️ Email sending failed:", emailError);
-                        // Don't fail the callback if email fails
-                  }
+                  })();
 
                   // Redirect to success page
                   const redirectUrl = config.IS_DEVELOPMENT ? config.FRONTEND_URL_DEV : config.FRONTEND_URL_PROD;

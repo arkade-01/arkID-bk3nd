@@ -14,7 +14,7 @@ import {
 const router = Router();
 
 router.post("/activate", authMiddleware, activateCard);
-router.get(":username/status", getCardStatus);
+router.get("/:username/status", getCardStatus);
 router.get("/:username/available", checkUsernameAvailability);
 router.patch("/update", authMiddleware, uploadMiddleware.single("image"), updateCard);
 router.get("/user/cards", authMiddleware, getUserCards);

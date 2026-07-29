@@ -15,6 +15,7 @@ All documentation has been organized in the [`docs/`](./docs/) folder:
 - 📧 **[EMAIL_USAGE_GUIDE.md](./docs/EMAIL_USAGE_GUIDE.md)** - Email templates guide
 - 🔗 **[EMAIL_CALLBACK_INTEGRATION.md](./docs/EMAIL_CALLBACK_INTEGRATION.md)** - Email + callback integration
 - 🎯 **[COMPLETE_SETUP.md](./docs/COMPLETE_SETUP.md)** - Everything combined
+- 🆕 **[NEW_API_ENDPOINTS.md](./docs/NEW_API_ENDPOINTS.md)** - Username availability check + `/admin` API (order sub-states, discount management)
 
 ---
 

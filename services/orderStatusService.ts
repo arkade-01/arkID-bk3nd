@@ -40,13 +40,15 @@ export const setPaymentStatus = async (
 export const setProvisionStatus = async (
       reference: string,
       provisionStatus: ProvisionStatus,
-      error?: string
+      error?: string,
+      cardId?: string
 ) => {
       const set: Record<string, any> = {
             provision_status: provisionStatus,
             updated_at: new Date(),
       };
       if (error !== undefined) set.last_error = error;
+      if (cardId !== undefined) set.cardId = cardId;
 
       return Sales.findOneAndUpdate({ reference }, { $set: set }, { new: true });
 };

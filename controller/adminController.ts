@@ -159,7 +159,7 @@ export const retryProvision = async (req: Request, res: Response) => {
             try {
                   const username = order.cardLink.split("/").pop() || `user_${Date.now()}`;
                   const card = await createCardForUser(username, order.email || "");
-                  const updated = await setProvisionStatus(reference, "provisioned");
+                  const updated = await setProvisionStatus(reference, "provisioned", undefined, card.card_id);
 
                   return res.status(200).json({
                         success: true,
@@ -211,6 +211,7 @@ export const retryEmail = async (req: Request, res: Response) => {
                   city: order.city,
                   state: order.state,
                   cardLink: order.cardLink,
+                  cardId: order.cardId || "",
                   reference: order.reference,
                   amount: order.amount,
                   currency: order.currency,

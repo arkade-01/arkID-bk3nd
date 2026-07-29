@@ -75,7 +75,7 @@ export const createOrder = async (req: Request, res: Response) => {
                   try {
                         const newCard = await createCardForUser(normalizedUsername, email || "");
                         createdCardId = newCard.card_id;
-                        await setProvisionStatus(sales.reference, "provisioned");
+                        await setProvisionStatus(sales.reference, "provisioned", undefined, createdCardId);
                         console.log(`✅ Card created for discount order, username: ${username}, card_id: ${createdCardId}`);
                   } catch (cardError) {
                         const message = cardError instanceof Error ? cardError.message : "Card creation failed";

@@ -47,7 +47,7 @@ export const handlePaymentCallback = async (req: Request, res: Response) => {
 
                         const newCard = await createCardForUser(username, order.email || "");
                         createdCardId = newCard.card_id;
-                        await setProvisionStatus(order.reference, "provisioned");
+                        await setProvisionStatus(order.reference, "provisioned", undefined, createdCardId);
                         console.log(`✅ Card created for username: ${username}, card_id: ${createdCardId}`);
                   } catch (cardError) {
                         const message = cardError instanceof Error ? cardError.message : "Card creation failed";
@@ -295,8 +295,8 @@ async function handleSuccessfulCharge(data: any) {
             if (order) {
                   try {
                         const username = order.cardLink.split('/').pop() || `user_${Date.now()}`;
-                        await createCardForUser(username, order.email || "");
-                        await setProvisionStatus(reference, "provisioned");
+                        const newCard = await createCardForUser(username, order.email || "");
+                        await setProvisionStatus(reference, "provisioned", undefined, newCard.card_id);
                         console.log(`✅ Card created via webhook for username: ${username}`);
                   } catch (cardError) {
                         const message = cardError instanceof Error ? cardError.message : "Card creation failed";

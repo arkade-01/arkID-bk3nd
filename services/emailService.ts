@@ -19,6 +19,7 @@ interface OrderDetails {
       city: string;
       state: string;
       cardLink: string;
+      cardId?: string;
       reference: string;
       amount: number;
       currency: string;

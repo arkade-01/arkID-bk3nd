@@ -14,6 +14,7 @@ const salesSchema = new Schema({
       state: { type: String, required: true },
       country: { type: String, required: true },
       cardLink: { type: String, required: true },
+      cardId: { type: String, default: "" },
 
       // Legacy overall status, derived from payment_status. Kept for backward
       // compatibility with existing consumers (frontend types, redirects).
